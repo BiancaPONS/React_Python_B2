@@ -3,8 +3,12 @@
 !.env.example
 
 .venv/
+api/.venv/
 __pycache__/
 *.pyc
 
 *.db
 collection.db
+
+node_modules/
+dist/
