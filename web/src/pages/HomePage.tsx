@@ -1,8 +1,21 @@
+import { useState } from "react";
 import Header from "../components/Header";
 import ItemCard from "../components/ItemCard";
 import { recettesMock } from "../data/mockItems";
 
 function HomePage() {
+  const [recherche, setRecherche] = useState("");
+
+  const recettesFiltrees = recettesMock.filter((recette) => {
+    const texte = recherche.toLowerCase();
+
+    return (
+      recette.titre.toLowerCase().includes(texte) ||
+      recette.categorie.toLowerCase().includes(texte) ||
+      recette.type_plat.toLowerCase().includes(texte)
+    );
+  });
+
   return (
     <>
       <Header />
@@ -21,6 +34,8 @@ function HomePage() {
             className="search-input"
             type="search"
             placeholder="Rechercher une recette..."
+            value={recherche}
+            onChange={(event) => setRecherche(event.target.value)}
           />
         </section>
 
@@ -31,14 +46,20 @@ function HomePage() {
               <h2>Recettes à découvrir</h2>
             </div>
 
-            <span>{recettesMock.length} recettes</span>
+            <span>{recettesFiltrees.length} recettes</span>
           </div>
 
-          <div className="recipe-grid">
-            {recettesMock.map((recette) => (
-              <ItemCard key={recette.id} item={recette} />
-            ))}
-          </div>
+          {recettesFiltrees.length === 0 ? (
+            <p className="empty-message">
+              Aucune recette ne correspond à votre recherche.
+            </p>
+          ) : (
+            <div className="recipe-grid">
+              {recettesFiltrees.map((recette) => (
+                <ItemCard key={recette.id} item={recette} />
+              ))}
+            </div>
+          )}
         </section>
       </main>
     </>

@@ -5,6 +5,16 @@ export interface User {
   email: string;
 }
 
+export interface RegisterBody {
+  email: string;
+  password: string;
+}
+
+export interface LoginBody {
+  email: string;
+  password: string;
+}
+
 export interface AuthToken {
   access_token: string;
   token_type: string;
@@ -36,6 +46,12 @@ export interface ItemsResponse {
   page: number;
   limit: number;
   results: Item[];
+}
+
+export interface StatsResponse {
+  total: number;
+  par_statut: Record<Statut, number>;
+  note_moyenne: number | null;
 }
 
 export interface ApiError {

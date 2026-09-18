@@ -234,4 +234,14 @@ h2 {
     align-items: flex-start;
     flex-direction: column;
   }
+
+  .empty-message {
+    padding: 2rem;
+    color: #64748b;
+    text-align: center;
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+  }
 }
+
