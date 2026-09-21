@@ -1,18 +1,70 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 import Header from "../components/Header";
 import ItemCard from "../components/ItemCard";
-import { recettesMock } from "../data/mockItems";
+import { HttpError } from "../services/http";
+import { getItems } from "../services/itemService";
+import type { Item } from "../types/api";
 
 function HomePage() {
   const [recherche, setRecherche] = useState("");
+  const [recettes, setRecettes] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const recettesFiltrees = recettesMock.filter((recette) => {
-    const texte = recherche.toLowerCase();
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadItems(): Promise<void> {
+      setLoading(true);
+      setError("");
+
+      try {
+        const response = await getItems({
+          limit: 100,
+        });
+
+        if (!cancelled) {
+          setRecettes(response.results);
+        }
+      } catch (caughtError: unknown) {
+        if (cancelled) {
+          return;
+        }
+
+        if (caughtError instanceof HttpError) {
+          setError(caughtError.message);
+        } else if (caughtError instanceof Error) {
+          setError(caughtError.message);
+        } else {
+          setError("Impossible de charger les recettes.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadItems();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const texteRecherche = recherche.trim().toLowerCase();
+
+  const recettesFiltrees = recettes.filter((recette) => {
+    if (texteRecherche === "") {
+      return true;
+    }
 
     return (
-      recette.titre.toLowerCase().includes(texte) ||
-      recette.categorie.toLowerCase().includes(texte) ||
-      recette.type_plat.toLowerCase().includes(texte)
+      recette.titre.toLowerCase().includes(texteRecherche) ||
+      recette.categorie.toLowerCase().includes(texteRecherche) ||
+      recette.type_plat.toLowerCase().includes(texteRecherche) ||
+      recette.description.toLowerCase().includes(texteRecherche)
     );
   });
 
@@ -46,20 +98,37 @@ function HomePage() {
               <h2>Recettes à découvrir</h2>
             </div>
 
-            <span>{recettesFiltrees.length} recettes</span>
+            {!loading && error === "" && (
+              <span>{recettesFiltrees.length} recettes</span>
+            )}
           </div>
 
-          {recettesFiltrees.length === 0 ? (
-            <p className="empty-message">
-              Aucune recette ne correspond à votre recherche.
-            </p>
-          ) : (
-            <div className="recipe-grid">
-              {recettesFiltrees.map((recette) => (
-                <ItemCard key={recette.id} item={recette} />
-              ))}
-            </div>
+          {loading && <p>Chargement des recettes...</p>}
+
+          {!loading && error !== "" && (
+            <p className="form-error">{error}</p>
           )}
+
+          {!loading &&
+            error === "" &&
+            recettesFiltrees.length === 0 && (
+              <p className="empty-message">
+                Aucune recette ne correspond à votre recherche.
+              </p>
+            )}
+
+          {!loading &&
+            error === "" &&
+            recettesFiltrees.length > 0 && (
+              <div className="recipe-grid">
+                {recettesFiltrees.map((recette) => (
+                  <ItemCard
+                    key={recette.id}
+                    item={recette}
+                  />
+                ))}
+              </div>
+            )}
         </section>
       </main>
     </>

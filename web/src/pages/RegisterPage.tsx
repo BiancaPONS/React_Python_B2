@@ -1,5 +1,7 @@
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
+
 import { register } from "../services/authService";
 
 function RegisterPage() {
@@ -9,7 +11,9 @@ function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ): Promise<void> {
     event.preventDefault();
 
     setMessage("");
@@ -17,9 +21,15 @@ function RegisterPage() {
     setLoading(true);
 
     try {
-      const user = await register({ email, password });
+      const user = await register({
+        email,
+        password,
+      });
 
-      setMessage(`Compte créé pour ${user.email}. Vous pouvez vous connecter.`);
+      setMessage(
+        `Compte créé pour ${user.email}. Vous pouvez vous connecter.`,
+      );
+
       setEmail("");
       setPassword("");
     } catch (caughtError: unknown) {
@@ -37,10 +47,12 @@ function RegisterPage() {
     <main className="form-page">
       <section className="form-card">
         <p className="eyebrow">Nouveau compte</p>
+
         <h1>Créer un compte</h1>
 
         <form onSubmit={handleSubmit}>
           <label htmlFor="email">Adresse email</label>
+
           <input
             id="email"
             type="email"
@@ -50,6 +62,7 @@ function RegisterPage() {
           />
 
           <label htmlFor="password">Mot de passe</label>
+
           <input
             id="password"
             type="password"
@@ -64,12 +77,17 @@ function RegisterPage() {
           </button>
         </form>
 
-        {message !== "" && <p className="form-message">{message}</p>}
+        {message !== "" && (
+          <p className="form-message">{message}</p>
+        )}
 
-        {error !== "" && <p className="form-error">{error}</p>}
+        {error !== "" && (
+          <p className="form-error">{error}</p>
+        )}
 
         <p className="form-link">
-          Déjà un compte ? <Link to="/login">Se connecter</Link>
+          Déjà un compte ?{" "}
+          <Link to="/login">Se connecter</Link>
         </p>
       </section>
     </main>

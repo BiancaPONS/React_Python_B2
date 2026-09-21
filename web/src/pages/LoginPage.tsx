@@ -1,8 +1,9 @@
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { HttpError } from "../services/http";
 import { useAuth } from "../contexts/AuthContext";
+import { HttpError } from "../services/http";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -45,10 +46,12 @@ function LoginPage() {
     <main className="form-page">
       <section className="form-card">
         <p className="eyebrow">Bienvenue</p>
+
         <h1>Se connecter</h1>
 
         <form onSubmit={handleSubmit}>
           <label htmlFor="email">Adresse email</label>
+
           <input
             id="email"
             type="email"
@@ -58,6 +61,7 @@ function LoginPage() {
           />
 
           <label htmlFor="password">Mot de passe</label>
+
           <input
             id="password"
             type="password"
@@ -71,7 +75,9 @@ function LoginPage() {
           </button>
         </form>
 
-        {error !== "" && <p className="form-error">{error}</p>}
+        {error !== "" && (
+          <p className="form-error">{error}</p>
+        )}
 
         <p className="form-link">
           Pas encore de compte ?{" "}
