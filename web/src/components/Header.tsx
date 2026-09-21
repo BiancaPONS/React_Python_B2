@@ -1,6 +1,10 @@
 import { Link } from "react-router-dom";
 
+import { useAuth } from "../contexts/AuthContext";
+
 function Header() {
+  const { user, isAuthenticated, logout } = useAuth();
+
   return (
     <header className="header">
       <Link className="logo" to="/">
@@ -9,8 +13,22 @@ function Header() {
 
       <nav className="navigation">
         <Link to="/">Catalogue</Link>
-        <Link to="/login">Connexion</Link>
-        <Link to="/register">Inscription</Link>
+
+        {isAuthenticated ? (
+          <>
+            <Link to="/collection">Ma collection</Link>
+            <Link to="/stats">Statistiques</Link>
+            <span>{user?.email}</span>
+            <button type="button" onClick={logout}>
+              Déconnexion
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login">Connexion</Link>
+            <Link to="/register">Inscription</Link>
+          </>
+        )}
       </nav>
     </header>
   );

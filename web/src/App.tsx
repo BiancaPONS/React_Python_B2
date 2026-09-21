@@ -1,4 +1,6 @@
 import { Route, Routes } from "react-router-dom";
+
+import ProtectedRoute from "./components/ProtectedRoute";
 import CollectionPage from "./pages/CollectionPage";
 import HomePage from "./pages/HomePage";
 import ItemDetailPage from "./pages/ItemDetailPage";
@@ -13,8 +15,11 @@ function App() {
       <Route path="/items/:itemId" element={<ItemDetailPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/collection" element={<CollectionPage />} />
-      <Route path="/stats" element={<StatsPage />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route path="/collection" element={<CollectionPage />} />
+        <Route path="/stats" element={<StatsPage />} />
+      </Route>
     </Routes>
   );
 }

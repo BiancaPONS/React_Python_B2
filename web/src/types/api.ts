@@ -25,8 +25,8 @@ export interface Item {
   titre: string;
   categorie: string;
   description: string;
-  image_url: string;
-  annee: number;
+  image_url: string | null;
+  annee: number | null;
   temps_preparation: number;
   difficulte: string;
   type_plat: string;
