@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from db.database import create_db_and_tables
 from routers.auth import router as auth_router
+from routers.items import router as items_router    
 
 app = FastAPI(title="Catalogue de recettes")
 
@@ -45,3 +46,4 @@ async def startup() -> None:
 
 
 app.include_router(auth_router)
+app.include_router(items_router)

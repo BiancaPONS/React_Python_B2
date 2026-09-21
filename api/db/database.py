@@ -1,10 +1,12 @@
 from collections.abc import AsyncGenerator
 
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlalchemy.ext.asyncio import create_async_engine
 
 from core.config import DATABASE_URL
+from models.item import Item
+from models.user import User
 
 engine = create_async_engine(
     DATABASE_URL,
