@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 
+import EmptyMessage from "../components/EmptyMessage";
+import ErrorMessage from "../components/ErrorMessage";
 import Header from "../components/Header";
 import ItemCard from "../components/ItemCard";
+import LoadingMessage from "../components/LoadingMessage";
 import { HttpError } from "../services/http";
 import { getItems } from "../services/itemService";
 import type { Item } from "../types/api";
@@ -76,13 +79,18 @@ function HomePage() {
         <section className="hero">
           <p className="eyebrow">Votre carnet culinaire</p>
 
-          <h1>Ma Collection de recettes</h1>
+          <h1>Ma collection de recettes</h1>
 
           <p className="hero-text">
             Découvrez, enregistrez et notez vos recettes préférées.
           </p>
 
+          <label className="search-label" htmlFor="recipe-search">
+            Rechercher une recette
+          </label>
+
           <input
+            id="recipe-search"
             className="search-input"
             type="search"
             placeholder="Rechercher une recette..."
@@ -99,22 +107,31 @@ function HomePage() {
             </div>
 
             {!loading && error === "" && (
-              <span>{recettesFiltrees.length} recettes</span>
+              <span>
+                {recettesFiltrees.length} recette
+                {recettesFiltrees.length !== 1 ? "s" : ""}
+              </span>
             )}
           </div>
 
-          {loading && <p>Chargement des recettes...</p>}
+          {loading && (
+            <LoadingMessage message="Chargement des recettes..." />
+          )}
 
           {!loading && error !== "" && (
-            <p className="form-error">{error}</p>
+            <ErrorMessage message={error} />
           )}
 
           {!loading &&
             error === "" &&
             recettesFiltrees.length === 0 && (
-              <p className="empty-message">
-                Aucune recette ne correspond à votre recherche.
-              </p>
+              <EmptyMessage
+                message={
+                  recherche.trim() === ""
+                    ? "Aucune recette disponible pour le moment."
+                    : "Aucune recette ne correspond à votre recherche."
+                }
+              />
             )}
 
           {!loading &&

@@ -764,3 +764,27 @@ p {
     animation-iteration-count: 1 !important;
   }
 }
+
+.status-message {
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  line-height: 1.5;
+}
+
+.status-loading {
+  color: var(--muted);
+  background: var(--paper-white);
+  border: 1px solid var(--border);
+}
+
+.status-error {
+  color: var(--danger);
+  background: #f9e4df;
+  border: 1px solid #e8bdb3;
+}
+
+.status-empty {
+  color: var(--muted);
+  background: var(--paper-white);
+  border: 1px dashed var(--border);
+}

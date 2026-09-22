@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 function Header() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
 
   return (
     <header className="header">

@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
+import EmptyMessage from "../components/EmptyMessage";
+import ErrorMessage from "../components/ErrorMessage";
+import LoadingMessage from "../components/LoadingMessage";
 import { HttpError } from "../services/http";
 import { getItem } from "../services/itemService";
 import type { Item } from "../types/api";
@@ -11,6 +14,7 @@ function ItemDetailPage() {
   const [recette, setRecette] = useState<Item | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -32,6 +36,8 @@ function ItemDetailPage() {
 
       setLoading(true);
       setError("");
+      setMessage("");
+      setRecette(null);
 
       try {
         const response = await getItem(numericItemId);
@@ -65,10 +71,16 @@ function ItemDetailPage() {
     };
   }, [itemId]);
 
+  function handleAddToCollection(): void {
+    setMessage(
+      "Cette recette sera bientôt ajoutée à votre collection.",
+    );
+  }
+
   if (loading) {
     return (
       <main className="page">
-        <p>Chargement de la recette...</p>
+        <LoadingMessage message="Chargement de la recette..." />
       </main>
     );
   }
@@ -76,9 +88,14 @@ function ItemDetailPage() {
   if (error !== "") {
     return (
       <main className="page">
+        <Link className="back-link" to="/">
+          <span aria-hidden="true">←</span>
+          <span>Retour au catalogue</span>
+        </Link>
+
         <h1>Recette introuvable</h1>
-        <p className="form-error">{error}</p>
-        <Link to="/">Retour au catalogue</Link>
+
+        <ErrorMessage message={error} />
       </main>
     );
   }
@@ -86,15 +103,24 @@ function ItemDetailPage() {
   if (recette === null) {
     return (
       <main className="page">
+        <Link className="back-link" to="/">
+          <span aria-hidden="true">←</span>
+          <span>Retour au catalogue</span>
+        </Link>
+
         <h1>Recette introuvable</h1>
-        <Link to="/">Retour au catalogue</Link>
+
+        <EmptyMessage message="Aucune recette ne correspond à cet identifiant." />
       </main>
     );
   }
 
   return (
     <main className="page">
-      <Link to="/">← Retour au catalogue</Link>
+      <Link className="back-link" to="/">
+        <span aria-hidden="true">←</span>
+        <span>Retour au catalogue</span>
+      </Link>
 
       <article className="detail-card">
         {recette.image_url !== null ? (
@@ -104,7 +130,11 @@ function ItemDetailPage() {
             alt={recette.titre}
           />
         ) : (
-          <div className="detail-image recipe-image-placeholder">
+          <div
+            className="detail-image recipe-image-placeholder"
+            role="img"
+            aria-label={`Image de ${recette.titre} à venir`}
+          >
             Image à venir
           </div>
         )}
@@ -122,9 +152,18 @@ function ItemDetailPage() {
             <span>{recette.type_plat}</span>
           </div>
 
-          <button type="button">
+          <button
+            type="button"
+            onClick={handleAddToCollection}
+          >
             Ajouter à ma collection
           </button>
+
+          {message !== "" && (
+            <p className="form-message" role="status">
+              {message}
+            </p>
+          )}
         </div>
       </article>
     </main>
