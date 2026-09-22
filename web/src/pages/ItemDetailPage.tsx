@@ -149,7 +149,10 @@ function ItemDetailPage() {
           <div className="recipe-details">
             <span>{recette.temps_preparation} min</span>
             <span>{recette.difficulte}</span>
-            <span>{recette.type_plat}</span>
+
+            {recette.type_plat && (
+              <span>{recette.type_plat}</span>
+            )}
           </div>
 
           <button

@@ -39,7 +39,10 @@ function ItemCard({ item }: ItemCardProps) {
         <div className="recipe-details">
           <span>{item.temps_preparation} min</span>
           <span>{item.difficulte}</span>
-          <span>{item.type_plat}</span>
+
+          {item.type_plat && (
+            <span>{item.type_plat}</span>
+          )}
         </div>
       </div>
     </article>
