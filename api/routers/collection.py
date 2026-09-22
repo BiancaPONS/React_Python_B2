@@ -48,7 +48,7 @@ def build_entry_response(
     response_model=list[CollectionEntryResponse],
 )
 async def get_collection(
-    statut: str | None = Query(default=None),
+    statut: str | None = Query(default=None), # On le laisse vide, dans Swagger tu appuies juste sur execute pour voir ta collection.
     session: AsyncSession = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ) -> list[CollectionEntryResponse]:
@@ -57,9 +57,13 @@ async def get_collection(
     )
 
     if statut is not None:
-        query = query.where(CollectionEntry.statut == statut)
+        query = query.where(
+            CollectionEntry.statut == statut
+        )
 
-    query = query.order_by(CollectionEntry.date_ajout.desc())
+    query = query.order_by(
+        CollectionEntry.date_ajout.desc()
+    )
 
     result = await session.exec(query)
     entries = result.all()
@@ -131,21 +135,34 @@ async def add_to_collection(
     await session.commit()
     await session.refresh(entry)
 
+    item = await session.get(Item, data.item_id)
+
+    if item is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "erreur": {
+                    "code": 404,
+                    "message": "Recette introuvable",
+                }
+            },
+        )
+
     return build_entry_response(entry, item)
 
 
 @router.patch(
-    "/collection/{entry_id}",
+    "/collection/item/{item_id}",
     response_model=CollectionEntryResponse,
 )
-async def update_collection_entry(
-    entry_id: int,
+async def update_collection_item(
+    item_id: int,
     data: CollectionUpdateRequest,
     session: AsyncSession = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ) -> CollectionEntryResponse:
     query = select(CollectionEntry).where(
-        CollectionEntry.id == entry_id,
+        CollectionEntry.item_id == item_id,
         CollectionEntry.user_id == current_user.id,
     )
 
@@ -158,7 +175,7 @@ async def update_collection_entry(
             detail={
                 "erreur": {
                     "code": 404,
-                    "message": "Entrée de collection introuvable",
+                    "message": "Cette recette n'est pas dans votre collection",
                 }
             },
         )
@@ -178,7 +195,7 @@ async def update_collection_entry(
     await session.commit()
     await session.refresh(entry)
 
-    item = await session.get(Item, entry.item_id)
+    item = await session.get(Item, item_id)
 
     if item is None:
         raise HTTPException(
@@ -195,16 +212,16 @@ async def update_collection_entry(
 
 
 @router.delete(
-    "/collection/{entry_id}",
+    "/collection/item/{item_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-async def delete_collection_entry(
-    entry_id: int,
+async def delete_collection_item(
+    item_id: int,
     session: AsyncSession = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ) -> None:
     query = select(CollectionEntry).where(
-        CollectionEntry.id == entry_id,
+        CollectionEntry.item_id == item_id,
         CollectionEntry.user_id == current_user.id,
     )
 
@@ -217,10 +234,11 @@ async def delete_collection_entry(
             detail={
                 "erreur": {
                     "code": 404,
-                    "message": "Entrée de collection introuvable",
+                    "message": "Cette recette n'est pas dans votre collection",
                 }
             },
         )
 
     await session.delete(entry)
     await session.commit()
+
