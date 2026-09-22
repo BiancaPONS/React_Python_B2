@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import func, select
+from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from dependencies.database import get_session
 from models.item import Item
 from schemas.item import ItemListResponse, ItemResponse
+
 
 router = APIRouter(
     prefix="/items",
@@ -27,31 +28,32 @@ async def get_items(
 
     if q is not None and q.strip() != "":
         search = f"%{q.strip()}%"
+
         query = query.where(
             (Item.titre.ilike(search))
             | (Item.description.ilike(search))
         )
 
     if categorie is not None and categorie.strip() != "":
-        query = query.where(Item.categorie == categorie.strip())
-
-    count_query = select(func.count()).select_from(query.subquery())
-    count_result = await session.exec(count_query)
-    total = count_result.one()
-
-    offset = (page - 1) * limit
-
-    query = query.offset(offset).limit(limit)
-    query = query.order_by(Item.titre)
+        query = query.where(
+            Item.categorie == categorie.strip()
+        )
 
     result = await session.exec(query)
-    items = result.all()
+    all_items = result.all()
+
+    total = len(all_items)
+
+    start = (page - 1) * limit
+    end = start + limit
+
+    page_items = all_items[start:end]
 
     return ItemListResponse(
         total=total,
         page=page,
         limit=limit,
-        results=items,
+        results=page_items,
     )
 
 

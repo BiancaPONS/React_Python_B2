@@ -5,8 +5,10 @@ from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.config import DATABASE_URL
+from models.collection import CollectionEntry
 from models.item import Item
 from models.user import User
+
 
 engine = create_async_engine(
     DATABASE_URL,

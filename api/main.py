@@ -1,17 +1,22 @@
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from db.database import create_db_and_tables
 from routers.auth import router as auth_router
-from routers.items import router as items_router    
+from routers.collection import router as collection_router
+from routers.items import router as items_router
+
 
 app = FastAPI(title="Catalogue de recettes")
 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -47,3 +52,4 @@ async def startup() -> None:
 
 app.include_router(auth_router)
 app.include_router(items_router)
+app.include_router(collection_router)

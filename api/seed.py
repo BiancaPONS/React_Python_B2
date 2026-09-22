@@ -21,7 +21,7 @@ items = [
         categorie="Boissons",
         image_url=None,
         temps_preparation=5,
-        difficulte="Moyenne",
+        difficulte="Moyen",
     ),
     Item(
         titre="Gaspacho",
@@ -85,7 +85,7 @@ items = [
         categorie="Plat",
         image_url=None,
         temps_preparation=120,
-        difficulte="Moyenne",
+        difficulte="Moyen",
     ),
     Item(
         titre="Yaglama",
@@ -93,7 +93,7 @@ items = [
         categorie="Plat",
         image_url=None,
         temps_preparation=60,
-        difficulte="Moyenne",
+        difficulte="Moyen",
     ),
     Item(
         titre="Cookies",
