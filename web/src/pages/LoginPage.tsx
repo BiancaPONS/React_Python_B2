@@ -35,7 +35,7 @@ function LoginPage() {
       } else if (caughtError instanceof Error) {
         setError(caughtError.message);
       } else {
-        setError("Une erreur est survenue.");
+        setError("Impossible de se connecter.");
       }
     } finally {
       setLoading(false);
@@ -45,16 +45,28 @@ function LoginPage() {
   return (
     <main className="form-page">
       <section className="form-card">
-        <p className="eyebrow">Bienvenue</p>
+        <Link className="back-link" to="/">
+          <span aria-hidden="true">←</span>
+          <span>Retour à l’accueil</span>
+        </Link>
 
-        <h1>Se connecter</h1>
+        <p className="eyebrow">Votre carnet vous attend</p>
+
+        <h1>Retrouvez vos recettes</h1>
+
+        <p>
+          Connectez-vous pour retrouver votre collection personnelle
+          et vos notes.
+        </p>
 
         <form onSubmit={handleSubmit}>
           <label htmlFor="email">Adresse email</label>
 
           <input
             id="email"
+            name="email"
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
@@ -64,24 +76,28 @@ function LoginPage() {
 
           <input
             id="password"
+            name="password"
             type="password"
+            autoComplete="current-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
           />
 
           <button type="submit" disabled={loading}>
-            {loading ? "Connexion..." : "Se connecter"}
+            {loading ? "Ouverture du carnet..." : "Se connecter"}
           </button>
         </form>
 
         {error !== "" && (
-          <p className="form-error">{error}</p>
+          <p className="form-error" role="alert">
+            {error}
+          </p>
         )}
 
         <p className="form-link">
           Pas encore de compte ?{" "}
-          <Link to="/register">Créer un compte</Link>
+          <Link to="/register">Créez votre carnet</Link>
         </p>
       </section>
     </main>

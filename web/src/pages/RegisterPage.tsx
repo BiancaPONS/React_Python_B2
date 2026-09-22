@@ -1,10 +1,13 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { register } from "../services/authService";
+import { HttpError } from "../services/http";
 
 function RegisterPage() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -27,16 +30,22 @@ function RegisterPage() {
       });
 
       setMessage(
-        `Compte créé pour ${user.email}. Vous pouvez vous connecter.`,
+        `Compte créé pour ${user.email}. Redirection vers la connexion...`,
       );
 
       setEmail("");
       setPassword("");
+
+      window.setTimeout(() => {
+        navigate("/login");
+      }, 1200);
     } catch (caughtError: unknown) {
-      if (caughtError instanceof Error) {
+      if (caughtError instanceof HttpError) {
+        setError(caughtError.message);
+      } else if (caughtError instanceof Error) {
         setError(caughtError.message);
       } else {
-        setError("Une erreur est survenue.");
+        setError("Impossible de créer le compte.");
       }
     } finally {
       setLoading(false);
@@ -46,16 +55,30 @@ function RegisterPage() {
   return (
     <main className="form-page">
       <section className="form-card">
-        <p className="eyebrow">Nouveau compte</p>
+        <Link className="back-link" to="/">
+          <span aria-hidden="true">←</span>
+          <span>Retour à l’accueil</span>
+        </Link>
 
-        <h1>Créer un compte</h1>
+        <p className="eyebrow">
+          La première page de votre carnet
+        </p>
+
+        <h1>Créez votre compte</h1>
+
+        <p>
+          Enregistrez vos recettes préférées et retrouvez-les
+          facilement au même endroit.
+        </p>
 
         <form onSubmit={handleSubmit}>
           <label htmlFor="email">Adresse email</label>
 
           <input
             id="email"
+            name="email"
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
@@ -65,29 +88,39 @@ function RegisterPage() {
 
           <input
             id="password"
+            name="password"
             type="password"
+            autoComplete="new-password"
+            minLength={8}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            minLength={8}
             required
           />
 
+          <small>
+            Le mot de passe doit contenir au moins 8 caractères.
+          </small>
+
           <button type="submit" disabled={loading}>
-            {loading ? "Création..." : "S’inscrire"}
+            {loading ? "Préparation du carnet..." : "Créer mon compte"}
           </button>
         </form>
 
         {message !== "" && (
-          <p className="form-message">{message}</p>
+          <p className="form-message" role="status">
+            {message}
+          </p>
         )}
 
         {error !== "" && (
-          <p className="form-error">{error}</p>
+          <p className="form-error" role="alert">
+            {error}
+          </p>
         )}
 
         <p className="form-link">
-          Déjà un compte ?{" "}
-          <Link to="/login">Se connecter</Link>
+          Vous avez déjà un compte ?{" "}
+          <Link to="/login">Connectez-vous</Link>
         </p>
       </section>
     </main>
