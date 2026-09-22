@@ -66,7 +66,6 @@ function HomePage() {
     return (
       recette.titre.toLowerCase().includes(texteRecherche) ||
       recette.categorie.toLowerCase().includes(texteRecherche) ||
-      recette.type_plat.toLowerCase().includes(texteRecherche) ||
       recette.description.toLowerCase().includes(texteRecherche)
     );
   });
@@ -85,15 +84,12 @@ function HomePage() {
             Découvrez, enregistrez et notez vos recettes préférées.
           </p>
 
-          <label className="search-label" htmlFor="recipe-search">
-            Rechercher une recette
-          </label>
-
           <input
             id="recipe-search"
             className="search-input"
             type="search"
             placeholder="Rechercher une recette..."
+            aria-label="Rechercher une recette"
             value={recherche}
             onChange={(event) => setRecherche(event.target.value)}
           />
