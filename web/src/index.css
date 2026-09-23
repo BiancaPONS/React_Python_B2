@@ -224,6 +224,7 @@ p {
   color: var(--muted);
   font-size: 1.05rem;
   line-height: 1.7;
+  color: white;
 }
 
 .eyebrow {
