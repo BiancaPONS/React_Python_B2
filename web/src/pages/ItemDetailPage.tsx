@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import {
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 
 import EmptyMessage from "../components/EmptyMessage";
 import ErrorMessage from "../components/ErrorMessage";
@@ -9,6 +13,7 @@ import { HttpError } from "../services/http";
 import { getItem } from "../services/itemService";
 import type { Item } from "../types/api";
 
+
 function ItemDetailPage() {
   const { itemId } = useParams<{ itemId: string }>();
 
@@ -17,6 +22,19 @@ function ItemDetailPage() {
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const fromCollection = searchParams.get("from") === "collection";
+
+  const backLabel = fromCollection
+    ? "Retour à ma collection"
+    : "Retour au catalogue";
+
+  function goBack(): void {
+    navigate(-1);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -110,10 +128,14 @@ function ItemDetailPage() {
   if (error !== "") {
     return (
       <main className="page">
-        <Link className="back-link" to="/">
+        <button
+          className="back-link"
+          type="button"
+          onClick={goBack}
+        >
           <span aria-hidden="true">←</span>
-          <span>Retour au catalogue</span>
-        </Link>
+          <span>{backLabel}</span>
+        </button>
 
         <h1>Recette introuvable</h1>
         <ErrorMessage message={error} />
@@ -124,10 +146,14 @@ function ItemDetailPage() {
   if (recette === null) {
     return (
       <main className="page">
-        <Link className="back-link" to="/">
+        <button
+          className="back-link"
+          type="button"
+          onClick={goBack}
+        >
           <span aria-hidden="true">←</span>
-          <span>Retour au catalogue</span>
-        </Link>
+          <span>{backLabel}</span>
+        </button>
 
         <h1>Recette introuvable</h1>
         <EmptyMessage message="Aucune recette ne correspond à cet identifiant." />
@@ -137,10 +163,14 @@ function ItemDetailPage() {
 
   return (
     <main className="page">
-      <Link className="back-link" to="/">
+      <button
+        className="back-link"
+        type="button"
+        onClick={goBack}
+      >
         <span aria-hidden="true">←</span>
-        <span>Retour au catalogue</span>
-      </Link>
+        <span>{backLabel}</span>
+      </button>
 
       <article className="detail-card">
         {recette.image_url !== null ? (
@@ -210,5 +240,6 @@ function ItemDetailPage() {
     </main>
   );
 }
+
 
 export default ItemDetailPage;

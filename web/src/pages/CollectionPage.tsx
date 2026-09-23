@@ -8,6 +8,7 @@ import { getCollection } from "../services/collectionService";
 import { HttpError } from "../services/http";
 import type { Entry } from "../types/api";
 
+
 function CollectionPage() {
   const [collection, setCollection] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,7 +114,9 @@ function CollectionPage() {
               className="recipe-card"
               key={entry.id}
             >
-              <Link to={`/items/${entry.item.id}`}>
+              <Link
+                to={`/items/${entry.item.id}?from=collection`}
+              >
                 {entry.item.image_url !== null ? (
                   <img
                     className="recipe-image"
@@ -147,5 +150,6 @@ function CollectionPage() {
     </main>
   );
 }
+
 
 export default CollectionPage;
