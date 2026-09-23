@@ -9,7 +9,11 @@ interface ItemCardProps {
 function ItemCard({ item }: ItemCardProps) {
   return (
     <article className="recipe-card">
-      <Link to={`/items/${item.id}`}>
+      <Link
+        className="recipe-image-link"
+        to={`/items/${item.id}`}
+        data-discover="true"
+      >
         {item.image_url !== null ? (
           <img
             className="recipe-image"
@@ -17,24 +21,20 @@ function ItemCard({ item }: ItemCardProps) {
             alt={item.titre}
           />
         ) : (
-          <div className="recipe-image recipe-image-placeholder">
+          <div
+            className="recipe-image recipe-image-placeholder"
+            role="img"
+            aria-label={`Image de ${item.titre} indisponible`}
+          >
             Aucune image disponible
           </div>
         )}
       </Link>
 
       <div className="recipe-content">
-        <span className="recipe-category">
-          {item.categorie}
-        </span>
+        <span className="recipe-category">{item.categorie}</span>
 
-        <h2>
-          <Link to={`/items/${item.id}`}>
-            {item.titre}
-          </Link>
-        </h2>
-
-        <p>{item.description}</p>
+        <h2>{item.titre}</h2>
 
         <div className="recipe-details">
           <span>{item.temps_preparation} min</span>

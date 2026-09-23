@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import EmptyMessage from "../components/EmptyMessage";
 import ErrorMessage from "../components/ErrorMessage";
 import LoadingMessage from "../components/LoadingMessage";
+import { addToCollection } from "../services/collectionService";
 import { HttpError } from "../services/http";
 import { getItem } from "../services/itemService";
 import type { Item } from "../types/api";
@@ -13,6 +14,7 @@ function ItemDetailPage() {
 
   const [recette, setRecette] = useState<Item | null>(null);
   const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
@@ -71,10 +73,30 @@ function ItemDetailPage() {
     };
   }, [itemId]);
 
-  function handleAddToCollection(): void {
-    setMessage(
-      "Cette recette sera bientôt ajoutée à votre collection.",
-    );
+  async function handleAddToCollection(): Promise<void> {
+    if (recette === null || adding) {
+      return;
+    }
+
+    setAdding(true);
+    setMessage("");
+
+    try {
+      await addToCollection(recette.id);
+      setMessage("Recette ajoutée à votre collection.");
+    } catch (caughtError: unknown) {
+      if (caughtError instanceof HttpError) {
+        setMessage(caughtError.message);
+      } else if (caughtError instanceof Error) {
+        setMessage(caughtError.message);
+      } else {
+        setMessage(
+          "Impossible d'ajouter la recette à votre collection.",
+        );
+      }
+    } finally {
+      setAdding(false);
+    }
   }
 
   if (loading) {
@@ -94,7 +116,6 @@ function ItemDetailPage() {
         </Link>
 
         <h1>Recette introuvable</h1>
-
         <ErrorMessage message={error} />
       </main>
     );
@@ -109,7 +130,6 @@ function ItemDetailPage() {
         </Link>
 
         <h1>Recette introuvable</h1>
-
         <EmptyMessage message="Aucune recette ne correspond à cet identifiant." />
       </main>
     );
@@ -157,9 +177,14 @@ function ItemDetailPage() {
 
           <button
             type="button"
-            onClick={handleAddToCollection}
+            onClick={() => {
+              void handleAddToCollection();
+            }}
+            disabled={adding}
           >
-            Ajouter à ma collection
+            {adding
+              ? "Ajout en cours..."
+              : "Ajouter à ma collection"}
           </button>
 
           {message !== "" && (

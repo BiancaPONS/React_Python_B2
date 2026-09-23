@@ -26,23 +26,23 @@ export function addToCollection(
 }
 
 export function updateCollectionEntry(
-  entryId: number,
+  itemId: number,
   data: {
     statut?: Statut;
     note?: number | null;
     commentaire?: string | null;
   },
 ): Promise<Entry> {
-  return request<Entry>(`/me/collection/${entryId}`, {
+  return request<Entry>(`/me/collection/item/${itemId}`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
 }
 
 export function deleteCollectionEntry(
-  entryId: number,
+  itemId: number,
 ): Promise<void> {
-  return request<void>(`/me/collection/${entryId}`, {
+  return request<void>(`/me/collection/item/${itemId}`, {
     method: "DELETE",
   });
 }
