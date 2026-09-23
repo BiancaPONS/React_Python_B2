@@ -55,6 +55,11 @@ function CollectionPage() {
   if (loading) {
     return (
       <main className="page">
+        <Link className="back-link" to="/">
+          <span aria-hidden="true">←</span>
+          <span>Retour au catalogue</span>
+        </Link>
+
         <p className="eyebrow">Espace personnel</p>
         <h1>Ma collection</h1>
         <LoadingMessage message="Chargement de votre collection..." />
@@ -65,6 +70,11 @@ function CollectionPage() {
   if (error !== "") {
     return (
       <main className="page">
+        <Link className="back-link" to="/">
+          <span aria-hidden="true">←</span>
+          <span>Retour au catalogue</span>
+        </Link>
+
         <p className="eyebrow">Espace personnel</p>
         <h1>Ma collection</h1>
         <ErrorMessage message={error} />
@@ -74,6 +84,11 @@ function CollectionPage() {
 
   return (
     <main className="page">
+      <Link className="back-link" to="/">
+        <span aria-hidden="true">←</span>
+        <span>Retour au catalogue</span>
+      </Link>
+
       <p className="eyebrow">Espace personnel</p>
 
       <h1>Ma collection</h1>
