@@ -35,6 +35,8 @@ def build_entry_response(
             id=item.id,
             titre=item.titre,
             description=item.description,
+            ingredients=item.ingredients,
+            preparation=item.preparation,
             categorie=item.categorie,
             image_url=item.image_url,
             temps_preparation=item.temps_preparation,
