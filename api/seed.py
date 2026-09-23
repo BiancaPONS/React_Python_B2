@@ -11,7 +11,10 @@ from models.item import Item
 THEMEALDB_URL = "https://www.themealdb.com/api/json/v1/1/search.php?s="
 
 
-async def get_image_url(client: httpx.AsyncClient, search_name: str) -> str | None:
+async def get_image_url(
+    client: httpx.AsyncClient,
+    search_name: str,
+) -> str | None:
     url = f"{THEMEALDB_URL}{quote(search_name)}"
 
     try:
@@ -40,20 +43,14 @@ def recette(
     preparation: str,
     image_search: str,
 ) -> dict[str, str | int]:
-    description = f"""{resume}
-
-Ingrédients :
-{ingredients}
-
-Préparation :
-{preparation}"""
-
     return {
         "titre": titre,
+        "description": resume,
+        "ingredients": ingredients,
+        "preparation": preparation,
         "categorie": categorie,
         "temps_preparation": temps,
         "difficulte": difficulte,
-        "description": description,
         "image_search": image_search,
     }
 
@@ -96,7 +93,7 @@ items = [
         "Facile",
         "Une salade fraîche et pratique à partager.",
         "- 200 g de semoule\n- 3 tomates\n- 1 concombre\n- Menthe\n- 2 citrons\n- Huile d'olive",
-        "1. Mélanger semoule et légumes coupés.\n2. Ajouter citron, huile et menthe.\n3. Laisser reposer au frais.",
+        "1. Mélanger la semoule et les légumes coupés.\n2. Ajouter le citron, l'huile et la menthe.\n3. Laisser reposer au frais.",
         "tabbouleh",
     ),
     recette(
@@ -116,7 +113,7 @@ items = [
         "Facile",
         "Une entrée chaude et crémeuse au jambon et au fromage.",
         "- Jambon\n- Crème fraîche\n- Fromage râpé\n- Échalote\n- Poivre",
-        "1. Faire revenir l'échalote.\n2. Ajouter jambon et crème.\n3. Ajouter le fromage puis servir chaud.",
+        "1. Faire revenir l'échalote.\n2. Ajouter le jambon et la crème.\n3. Ajouter le fromage puis servir chaud.",
         "ham cheese",
     ),
     recette(
@@ -126,7 +123,7 @@ items = [
         "Moyen",
         "Une quiche familiale facile à personnaliser.",
         "- 1 pâte brisée\n- 200 g de lardons\n- 3 œufs\n- 20 cl de crème\n- Fromage râpé",
-        "1. Mettre la pâte dans un moule.\n2. Ajouter les lardons.\n3. Verser œufs et crème.\n4. Cuire 35 minutes à 180 °C.",
+        "1. Mettre la pâte dans un moule.\n2. Ajouter les lardons.\n3. Verser les œufs et la crème.\n4. Cuire 35 minutes à 180 °C.",
         "quiche",
     ),
     recette(
@@ -136,7 +133,7 @@ items = [
         "Difficile",
         "Un plat mijoté traditionnel au vin rouge.",
         "- 1 kg de bœuf\n- Vin rouge\n- Carottes\n- Oignons\n- Lardons\n- Champignons",
-        "1. Faire revenir le bœuf.\n2. Ajouter légumes et vin.\n3. Mijoter environ 2 heures.",
+        "1. Faire revenir le bœuf.\n2. Ajouter les légumes et le vin.\n3. Mijoter environ 2 heures.",
         "beef bourguignon",
     ),
     recette(
@@ -146,7 +143,7 @@ items = [
         "Difficile",
         "Un bouillon complet avec nouilles et bœuf.",
         "- Bœuf\n- Nouilles ramen\n- Bouillon\n- Œufs\n- Carotte\n- Sauce soja",
-        "1. Chauffer le bouillon.\n2. Ajouter nouilles et légumes.\n3. Ajouter bœuf et œuf mollet.",
+        "1. Chauffer le bouillon.\n2. Ajouter nouilles et légumes.\n3. Ajouter le bœuf et l'œuf mollet.",
         "beef ramen",
     ),
     recette(
@@ -226,7 +223,7 @@ items = [
         "Facile",
         "Une salade croquante au poulet et parmesan.",
         "- Poulet\n- Salade romaine\n- Parmesan\n- Croûtons\n- Sauce César",
-        "1. Cuire le poulet.\n2. Mélanger avec salade, croûtons et parmesan.\n3. Ajouter la sauce.",
+        "1. Cuire le poulet.\n2. Mélanger avec la salade, les croûtons et le parmesan.\n3. Ajouter la sauce.",
         "caesar salad",
     ),
     recette(
@@ -246,7 +243,7 @@ items = [
         "Très Facile",
         "Une crème de pois chiches au tahini et au citron.",
         "- Pois chiches\n- Tahini\n- Citron\n- Ail\n- Huile d'olive",
-        "1. Mixer tous les ingrédients.\n2. Servir avec pain ou crudités.",
+        "1. Mixer tous les ingrédients.\n2. Servir avec du pain ou des crudités.",
         "hummus",
     ),
     recette(
@@ -286,7 +283,7 @@ items = [
         "Facile",
         "Des œufs garnis d'une crème au jaune d'œuf.",
         "- Œufs\n- Mayonnaise\n- Moutarde\n- Ciboulette",
-        "1. Cuire les œufs.\n2. Mélanger les jaunes avec mayonnaise.\n3. Garnir les blancs.",
+        "1. Cuire les œufs.\n2. Mélanger les jaunes avec la mayonnaise.\n3. Garnir les blancs.",
         "deviled eggs",
     ),
     recette(
@@ -296,7 +293,7 @@ items = [
         "Facile",
         "Une soupe réconfortante gratinée au fromage.",
         "- Oignons\n- Bouillon\n- Pain\n- Fromage râpé\n- Beurre",
-        "1. Faire fondre les oignons.\n2. Ajouter le bouillon.\n3. Gratiner avec pain et fromage.",
+        "1. Faire fondre les oignons.\n2. Ajouter le bouillon.\n3. Gratiner avec le pain et le fromage.",
         "onion soup",
     ),
     recette(
@@ -316,7 +313,7 @@ items = [
         "Facile",
         "Des pâtes crémeuses avec lardons et parmesan.",
         "- Pâtes\n- Lardons\n- Jaunes d'œufs\n- Parmesan\n- Poivre",
-        "1. Cuire les pâtes.\n2. Cuire les lardons.\n3. Mélanger avec œufs et parmesan hors du feu.",
+        "1. Cuire les pâtes.\n2. Cuire les lardons.\n3. Mélanger avec les œufs et le parmesan hors du feu.",
         "carbonara",
     ),
     recette(
@@ -346,7 +343,7 @@ items = [
         "Facile",
         "Du poulet mijoté dans une sauce curry au lait de coco.",
         "- Poulet\n- Oignon\n- Lait de coco\n- Curry\n- Riz",
-        "1. Faire revenir poulet et oignon.\n2. Ajouter curry et lait de coco.\n3. Mijoter puis servir avec du riz.",
+        "1. Faire revenir le poulet et l'oignon.\n2. Ajouter curry et lait de coco.\n3. Mijoter puis servir avec du riz.",
         "chicken curry",
     ),
     recette(
@@ -554,14 +551,24 @@ async def seed() -> None:
                         Item(
                             titre=str(data["titre"]),
                             description=str(data["description"]),
+                            ingredients=str(data["ingredients"]),
+                            preparation=str(data["preparation"]),
                             categorie=str(data["categorie"]),
                             image_url=image_url,
-                            temps_preparation=int(data["temps_preparation"]),
+                            temps_preparation=int(
+                                data["temps_preparation"]
+                            ),
                             difficulte=str(data["difficulte"]),
                         )
                     )
                 else:
                     existing_item.description = str(data["description"])
+                    existing_item.ingredients = str(
+                        data["ingredients"]
+                    )
+                    existing_item.preparation = str(
+                        data["preparation"]
+                    )
                     existing_item.categorie = str(data["categorie"])
                     existing_item.image_url = image_url
                     existing_item.temps_preparation = int(
