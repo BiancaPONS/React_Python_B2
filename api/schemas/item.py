@@ -7,6 +7,8 @@ class ItemResponse(BaseModel):
     id: int
     titre: str
     description: str
+    ingredients: str
+    preparation: str
     categorie: str
     image_url: str | None
     temps_preparation: int

@@ -23,13 +23,13 @@ export interface AuthToken {
 export interface Item {
   id: number;
   titre: string;
-  categorie: string;
   description: string;
+  ingredients: string;
+  preparation: string;
+  categorie: string;
   image_url: string | null;
-  annee: number | null;
   temps_preparation: number;
   difficulte: string;
-  type_plat: string;
 }
 
 export interface Entry {

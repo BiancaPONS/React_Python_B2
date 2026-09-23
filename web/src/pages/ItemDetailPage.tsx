@@ -164,15 +164,28 @@ function ItemDetailPage() {
 
           <h1>{recette.titre}</h1>
 
-          <p>{recette.description}</p>
+          <section className="recipe-description">
+            <h2>Description</h2>
+            <p>{recette.description}</p>
+          </section>
+
+          <section className="recipe-ingredients">
+            <h2>Ingrédients</h2>
+            <p className="recipe-text">
+              {recette.ingredients}
+            </p>
+          </section>
+
+          <section className="recipe-preparation">
+            <h2>Préparation</h2>
+            <p className="recipe-text">
+              {recette.preparation}
+            </p>
+          </section>
 
           <div className="recipe-details">
             <span>{recette.temps_preparation} min</span>
             <span>{recette.difficulte}</span>
-
-            {recette.type_plat && (
-              <span>{recette.type_plat}</span>
-            )}
           </div>
 
           <button

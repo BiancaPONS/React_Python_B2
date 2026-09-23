@@ -140,8 +140,8 @@ Quelques routes utiles :
 - `GET /items/{id}`
 - `POST /me/collection`
 - `GET /me/collection`
-- `PATCH /me/collection/{entry_id}`
-- `DELETE /me/collection/{entry_id}`
+- `PATCH /me/collection/item/{item_id}`
+- `DELETE /me/collection/item/{item_id}`
 - `GET /me/stats`
 
 Pour les routes protégées, clique sur `Authorize` et colle le token obtenu avec `POST /auth/login`.
