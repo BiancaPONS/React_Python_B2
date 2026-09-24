@@ -7,6 +7,7 @@ import ItemDetailPage from "./pages/ItemDetailPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import StatsPage from "./pages/StatsPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route path="/collection" element={<CollectionPage />} />
         <Route path="/stats" element={<StatsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );
