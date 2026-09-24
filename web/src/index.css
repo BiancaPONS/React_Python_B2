@@ -220,22 +220,23 @@ p {
   line-height: 1.05;
 }
 
-.hero-text {
+.hero-text,
+.collection-intro {
   position: relative;
   z-index: 1;
-  max-width: 640px;
-  margin-bottom: 1.75rem;
-  color: var(--paper-white);
-  font-size: 1.05rem;
-  line-height: 1.7;
-}
-
-.collection-intro {
   max-width: 640px;
   margin-bottom: 1.75rem;
   color: var(--muted);
   font-size: 1.05rem;
   line-height: 1.7;
+}
+
+.hero-text {
+  color: var(--paper-white);
+}
+
+.collection-intro {
+  position: static;
 }
 
 .eyebrow {
@@ -366,15 +367,53 @@ p {
 .recipe-details {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.65rem;
+  width: 100%;
+  margin-top: 1rem;
+  overflow-x: auto;
 }
 
-.recipe-details span {
+.recipe-details > span {
+  flex: 0 0 auto;
   padding: 0.35rem 0.55rem;
   background: #f6eee4;
   border: 1px solid #ead9c7;
   border-radius: 999px;
+}
+
+.status-control,
+.rating-control {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 42px;
+  padding: 0.35rem 0.65rem;
+  color: var(--muted);
+  background: var(--paper-white);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-control select,
+.rating-control select {
+  min-width: 0;
+  padding: 0;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-weight: 700;
+}
+
+.status-control select:focus,
+.rating-control select:focus {
+  outline: 2px solid rgb(159 79 50 / 0.25);
+  outline-offset: 2px;
 }
 
 .empty-message,
@@ -799,39 +838,14 @@ p {
 
 .collection-actions {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
+  margin-top: 2rem;
 }
 
-.status-control,
-.rating-control {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.35rem 0.65rem;
-  color: var(--muted);
-  background: var(--paper-white);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.status-control select,
-.rating-control select {
-  padding: 0;
-  color: var(--ink);
-  background: transparent;
-  border: 0;
-  font: inherit;
-  font-weight: 700;
-}
-
-.status-control select:focus,
-.rating-control select:focus {
-  outline: 2px solid rgb(159 79 50 / 0.25);
-  outline-offset: 2px;
+.collection-actions button {
+  margin-top: 0;
 }
 
 .danger-action {
@@ -872,12 +886,23 @@ p {
 }
 
 @media (max-width: 800px) {
+  .recipe-details {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  .recipe-details .status-control,
+  .recipe-details .rating-control {
+    max-width: 100%;
+  }
+
   .collection-actions {
     align-items: stretch;
     flex-direction: column;
+    width: 100%;
   }
 
-  .status-control {
+  .collection-actions button {
     width: 100%;
   }
 }

@@ -92,6 +92,10 @@ function ItemDetailPage() {
                 : String(currentEntry.note),
             );
             setCommentaire(currentEntry.commentaire ?? "");
+          } else {
+            setStatut("a_decouvrir");
+            setNote("");
+            setCommentaire("");
           }
         } catch {
           setCollectionEntry(null);
@@ -147,9 +151,8 @@ function ItemDetailPage() {
       const updatedEntry = await updateCollectionEntry(recette.id, {
         statut,
         note: note === "" ? null : Number(note),
-        commentaire: commentaire.trim() === ""
-          ? null
-          : commentaire.trim(),
+        commentaire:
+          commentaire.trim() === "" ? null : commentaire.trim(),
       });
 
       setCollectionEntry(updatedEntry);
@@ -262,7 +265,9 @@ function ItemDetailPage() {
             recette={recette}
             isInCollection={isInCollection}
             note={note}
+            statut={statut}
             onNoteChange={setNote}
+            onStatusChange={setStatut}
           />
 
           {!isInCollection ? (
@@ -275,8 +280,6 @@ function ItemDetailPage() {
             </button>
           ) : (
             <CollectionActions
-              statut={statut}
-              onStatusChange={setStatut}
               onUpdate={() => void handleUpdateCollection()}
               onDelete={() => void handleDeleteFromCollection()}
               updating={updating}
@@ -335,14 +338,18 @@ interface RecipeDetailsProps {
   recette: Item;
   isInCollection: boolean;
   note: string;
+  statut: Statut;
   onNoteChange: (value: string) => void;
+  onStatusChange: (value: Statut) => void;
 }
 
 function RecipeDetails({
   recette,
   isInCollection,
   note,
+  statut,
   onNoteChange,
+  onStatusChange,
 }: RecipeDetailsProps) {
   return (
     <div className="recipe-details">
@@ -350,29 +357,43 @@ function RecipeDetails({
       <span>{recette.difficulte}</span>
 
       {isInCollection && (
-        <label className="rating-control">
-          <span>Note</span>
-          <select
-            value={note}
-            onChange={(event) => onNoteChange(event.target.value)}
-            aria-label="Note de la recette sur 5"
-          >
-            <option value="">—</option>
-            <option value="1">1/5</option>
-            <option value="2">2/5</option>
-            <option value="3">3/5</option>
-            <option value="4">4/5</option>
-            <option value="5">5/5</option>
-          </select>
-        </label>
+        <>
+          <label className="rating-control">
+            <span>Note</span>
+            <select
+              value={note}
+              onChange={(event) => onNoteChange(event.target.value)}
+              aria-label="Note de la recette sur 5"
+            >
+              <option value="">—</option>
+              <option value="1">1/5</option>
+              <option value="2">2/5</option>
+              <option value="3">3/5</option>
+              <option value="4">4/5</option>
+              <option value="5">5/5</option>
+            </select>
+          </label>
+
+          <label className="status-control">
+            <span>Statut</span>
+            <select
+              value={statut}
+              onChange={(event) => {
+                onStatusChange(event.target.value as Statut);
+              }}
+            >
+              <option value="a_decouvrir">À découvrir</option>
+              <option value="en_cours">En cours</option>
+              <option value="termine">Terminé</option>
+            </select>
+          </label>
+        </>
       )}
     </div>
   );
 }
 
 interface CollectionActionsProps {
-  statut: Statut;
-  onStatusChange: (value: Statut) => void;
   onUpdate: () => void;
   onDelete: () => void;
   updating: boolean;
@@ -380,8 +401,6 @@ interface CollectionActionsProps {
 }
 
 function CollectionActions({
-  statut,
-  onStatusChange,
   onUpdate,
   onDelete,
   updating,
@@ -403,25 +422,8 @@ function CollectionActions({
         onClick={onDelete}
         disabled={updating || removing}
       >
-        {removing
-          ? "Suppression..."
-          : "Supprimer de ma collection"}
+        {removing ? "Suppression..." : "Supprimer de ma collection"}
       </button>
-
-      <label className="status-control">
-        <span>Statut</span>
-
-        <select
-          value={statut}
-          onChange={(event) => {
-            onStatusChange(event.target.value as Statut);
-          }}
-        >
-          <option value="a_decouvrir">À découvrir</option>
-          <option value="en_cours">En cours</option>
-          <option value="termine">Terminé</option>
-        </select>
-      </label>
     </div>
   );
 }
