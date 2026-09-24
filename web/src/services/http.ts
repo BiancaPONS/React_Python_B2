@@ -1,53 +1,47 @@
-import type { ApiError } from "../types/api";
-
-const apiUrl = import.meta.env.VITE_API_URL;
-
-if (!apiUrl) {
-  throw new Error(
-    "VITE_API_URL est introuvable. Vérifie le fichier web/.env.",
-  );
-}
+const API_URL = "http://localhost:8000";
 
 export class HttpError extends Error {
-  code: number;
+  status: number;
 
-  constructor(error: ApiError) {
-    super(error.message);
+  constructor(status: number, message: string) {
+    super(message);
     this.name = "HttpError";
-    this.code = error.code;
+    this.status = status;
   }
 }
 
-interface ErrorResponse {
-  erreur: ApiError;
-}
+async function parseError(response: Response): Promise<string> {
+  const text = await response.text();
 
-function isErrorResponse(value: unknown): value is ErrorResponse {
-  if (typeof value !== "object" || value === null) {
-    return false;
+  if (text === "") {
+    return `Erreur HTTP ${response.status}`;
   }
 
-  if (!("erreur" in value)) {
-    return false;
+  try {
+    const data: unknown = JSON.parse(text);
+
+    if (
+      typeof data === "object" &&
+      data !== null &&
+      "detail" in data &&
+      typeof data.detail === "string"
+    ) {
+      return data.detail;
+    }
+
+    if (
+      typeof data === "object" &&
+      data !== null &&
+      "message" in data &&
+      typeof data.message === "string"
+    ) {
+      return data.message;
+    }
+
+    return text;
+  } catch {
+    return text;
   }
-
-  const possibleError = value.erreur;
-
-  if (
-    typeof possibleError !== "object" ||
-    possibleError === null
-  ) {
-    return false;
-  }
-
-  if (!("code" in possibleError) || !("message" in possibleError)) {
-    return false;
-  }
-
-  return (
-    typeof possibleError.code === "number" &&
-    typeof possibleError.message === "string"
-  );
 }
 
 export async function request<T>(
@@ -58,33 +52,39 @@ export async function request<T>(
 
   const headers = new Headers(options.headers);
 
-  headers.set("Content-Type", "application/json");
   headers.set("Accept", "application/json");
+
+  if (options.body !== undefined) {
+    headers.set("Content-Type", "application/json");
+  }
 
   if (token !== null) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`${apiUrl}${path}`, {
+  const response = await fetch(`${API_URL}${path}`, {
     ...options,
     headers,
   });
 
-  const contentType = response.headers.get("content-type");
-  const isJson = contentType?.includes("application/json") ?? false;
-
-  const data: unknown = isJson ? await response.json() : null;
-
   if (!response.ok) {
-    if (isErrorResponse(data)) {
-      throw new HttpError(data.erreur);
-    }
+    const message = await parseError(response);
 
-    throw new HttpError({
-      code: response.status,
-      message: "Une erreur est survenue.",
-    });
+    throw new HttpError(response.status, message);
   }
 
-  return data as T;
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  const contentType = response.headers.get("content-type");
+
+  if (
+    contentType !== null &&
+    contentType.includes("application/json")
+  ) {
+    return (await response.json()) as T;
+  }
+
+  return undefined as T;
 }

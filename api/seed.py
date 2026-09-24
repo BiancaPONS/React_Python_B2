@@ -111,7 +111,7 @@ items = [
         "- 1 pâte feuilletée\n- 150 g de fromage râpé\n- 1 œuf\n- Crème fraîche\n- Sel et poivre",
         "1. Découper la pâte.\n2. Ajouter le fromage.\n3. Refermer puis cuire au four.",
         "cheese pastry",
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqtGTEacRWhMOA1Penw-KQrUDC8gMo2ON6BPJ6Swvvww&s=10",
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5ZUsbTaNx9-xKQuCACfAOlJYcsvz85-kVSU-4PedK9A&s=10",
     ),
     recette(
         "Crème jambon fromage",
