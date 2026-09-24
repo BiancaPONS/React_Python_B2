@@ -1,40 +1,95 @@
-import { useState } from "react";
-import type { FormEvent } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { register } from "../services/authService";
 import { HttpError } from "../services/http";
+import { register } from "../services/authService";
+
+interface PasswordChecks {
+  length: boolean;
+  lowercase: boolean;
+  uppercase: boolean;
+  number: boolean;
+  special: boolean;
+}
 
 function RegisterPage() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const passwordChecks = useMemo<PasswordChecks>(() => {
+    return {
+      length: password.length >= 8,
+      lowercase: /[a-z]/.test(password),
+      uppercase: /[A-Z]/.test(password),
+      number: /\d/.test(password),
+      special: /[^A-Za-z0-9]/.test(password),
+    };
+  }, [password]);
+
+  const passwordScore = Object.values(passwordChecks).filter(
+    Boolean,
+  ).length;
+
+  const passwordStrength =
+    password.length === 0
+      ? "empty"
+      : passwordScore <= 2
+        ? "weak"
+        : passwordScore <= 4
+          ? "medium"
+          : "strong";
+
+  const passwordsMatch =
+    passwordConfirmation.length > 0 &&
+    password === passwordConfirmation;
+
+  const passwordIsValid = passwordScore === 5;
+  const canSubmit =
+    email.trim() !== "" &&
+    passwordIsValid &&
+    passwordsMatch &&
+    !loading;
 
   async function handleSubmit(
-    event: FormEvent<HTMLFormElement>,
+    event: React.FormEvent<HTMLFormElement>,
   ): Promise<void> {
     event.preventDefault();
 
-    setMessage("");
     setError("");
+    setSuccess("");
+
+    if (!passwordIsValid) {
+      setError(
+        "Votre mot de passe ne respecte pas encore tous les critères.",
+      );
+      return;
+    }
+
+    if (password !== passwordConfirmation) {
+      setError("Les mots de passe ne correspondent pas.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const user = await register({
-        email,
+      await register({
+        email: email.trim(),
         password,
       });
 
-      setMessage(
-        `Compte créé pour ${user.email}. Redirection vers la connexion...`,
+      setSuccess(
+        "Votre compte a été créé. Vous pouvez maintenant vous connecter.",
       );
 
-      setEmail("");
       setPassword("");
+      setPasswordConfirmation("");
 
       window.setTimeout(() => {
         navigate("/login");
@@ -45,7 +100,7 @@ function RegisterPage() {
       } else if (caughtError instanceof Error) {
         setError(caughtError.message);
       } else {
-        setError("Impossible de créer le compte.");
+        setError("Impossible de créer votre compte.");
       }
     } finally {
       setLoading(false);
@@ -55,62 +110,136 @@ function RegisterPage() {
   return (
     <main className="form-page">
       <section className="form-card">
-        <Link className="back-link" to="/">
-          <span aria-hidden="true">←</span>
-          <span>Retour à l’accueil</span>
-        </Link>
+        <p className="eyebrow">Créer un compte</p>
 
-        <p className="eyebrow">
-          La première page de votre carnet
-        </p>
-
-        <h1>Créez votre compte</h1>
+        <h1>Rejoignez votre carnet</h1>
 
         <p>
-          Enregistrez vos recettes préférées et retrouvez-les
-          facilement au même endroit.
+          Créez votre compte pour conserver vos recettes préférées.
         </p>
 
         <form onSubmit={handleSubmit}>
-          <label htmlFor="email">Adresse email</label>
+          <label htmlFor="register-email">
+            Adresse e-mail
+          </label>
 
           <input
-            id="email"
-            name="email"
+            id="register-email"
             type="email"
-            autoComplete="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
+            autoComplete="email"
             required
           />
 
-          <label htmlFor="password">Mot de passe</label>
+          <label htmlFor="register-password">
+            Mot de passe
+          </label>
 
           <input
-            id="password"
-            name="password"
+            id="register-password"
             type="password"
-            autoComplete="new-password"
-            minLength={8}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
+            autoComplete="new-password"
+            minLength={8}
+            maxLength={128}
             required
           />
 
-          <small>
-            Le mot de passe doit contenir au moins 8 caractères.
-          </small>
+          {password.length > 0 && (
+            <div
+              className={`password-strength password-strength-${passwordStrength}`}
+              aria-live="polite"
+            >
+              <div className="password-strength-header">
+                <span>Force du mot de passe</span>
+                <strong>
+                  {passwordStrength === "weak"
+                    ? "Faible"
+                    : passwordStrength === "medium"
+                      ? "Moyenne"
+                      : "Forte"}
+                </strong>
+              </div>
 
-          <button type="submit" disabled={loading}>
-            {loading ? "Préparation du carnet..." : "Créer mon compte"}
+              <div
+                className="password-strength-bar"
+                aria-hidden="true"
+              >
+                <span
+                  style={{
+                    width: `${(passwordScore / 5) * 100}%`,
+                  }}
+                />
+              </div>
+
+              <ul className="password-rules">
+                <PasswordRule
+                  valid={passwordChecks.length}
+                  text="8 caractères minimum"
+                />
+
+                <PasswordRule
+                  valid={passwordChecks.lowercase}
+                  text="Une lettre minuscule"
+                />
+
+                <PasswordRule
+                  valid={passwordChecks.uppercase}
+                  text="Une lettre majuscule"
+                />
+
+                <PasswordRule
+                  valid={passwordChecks.number}
+                  text="Un chiffre"
+                />
+
+                <PasswordRule
+                  valid={passwordChecks.special}
+                  text="Un caractère spécial"
+                />
+              </ul>
+            </div>
+          )}
+
+          <label htmlFor="register-password-confirmation">
+            Confirmer le mot de passe
+          </label>
+
+          <input
+            id="register-password-confirmation"
+            type="password"
+            value={passwordConfirmation}
+            onChange={(event) =>
+              setPasswordConfirmation(event.target.value)
+            }
+            autoComplete="new-password"
+            required
+          />
+
+          {passwordConfirmation.length > 0 && (
+            <p
+              className={
+                passwordsMatch
+                  ? "password-match password-match-valid"
+                  : "password-match password-match-invalid"
+              }
+              role="status"
+            >
+              {passwordsMatch
+                ? "Les mots de passe correspondent."
+                : "Les mots de passe ne correspondent pas."}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={!canSubmit}
+          >
+            {loading ? "Création en cours..." : "Créer mon compte"}
           </button>
         </form>
-
-        {message !== "" && (
-          <p className="form-message" role="status">
-            {message}
-          </p>
-        )}
 
         {error !== "" && (
           <p className="form-error" role="alert">
@@ -118,12 +247,37 @@ function RegisterPage() {
           </p>
         )}
 
+        {success !== "" && (
+          <p className="form-message" role="status">
+            {success}
+          </p>
+        )}
+
         <p className="form-link">
           Vous avez déjà un compte ?{" "}
-          <Link to="/login">Connectez-vous</Link>
+          <Link to="/login">Se connecter</Link>
         </p>
       </section>
     </main>
+  );
+}
+
+interface PasswordRuleProps {
+  valid: boolean;
+  text: string;
+}
+
+function PasswordRule({
+  valid,
+  text,
+}: PasswordRuleProps) {
+  return (
+    <li className={valid ? "password-rule-valid" : ""}>
+      <span aria-hidden="true">
+        {valid ? "✓" : "○"}
+      </span>
+      {text}
+    </li>
   );
 }
 

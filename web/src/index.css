@@ -552,7 +552,7 @@ p {
 .detail-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  align-items: start;
+  align-items: stretch;
   overflow: hidden;
   background: var(--paper-white);
   border: 1px solid var(--border);
@@ -820,7 +820,9 @@ p {
 .comment-input {
   display: block;
   width: 100%;
-  min-height: 130px;
+  height: 425px;
+  min-height: 425px;
+  max-height: 425px;
   padding: 0.9rem 1rem;
   color: var(--ink);
   background: var(--paper-white);
@@ -828,7 +830,9 @@ p {
   border-radius: 12px;
   font: inherit;
   line-height: 1.5;
-  resize: vertical;
+  resize: none;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .comment-input:focus {
@@ -977,4 +981,253 @@ p {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.stat-card {
+  min-height: 190px;
+  padding: 1.5rem;
+  background: var(--paper-white);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--small-shadow);
+}
+
+.stat-card-featured {
+  color: var(--paper-white);
+  background:
+    linear-gradient(135deg, rgb(74 35 24 / 0.14), transparent),
+    linear-gradient(135deg, var(--terracotta-dark), var(--terracotta));
+  border-color: transparent;
+}
+
+.stat-label {
+  margin-bottom: 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.stat-card-featured .stat-label {
+  color: #ffe2c9;
+}
+
+.stat-value {
+  margin-bottom: 0.5rem;
+  color: var(--ink);
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-card-featured .stat-value {
+  color: var(--paper-white);
+}
+
+.stat-description {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.stat-card-featured .stat-description {
+  color: #ffe2c9;
+}
+
+.stats-section {
+  margin-top: 3rem;
+}
+
+.stats-section-heading {
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.stats-section-heading h2 {
+  margin-bottom: 0;
+  font-size: 2rem;
+}
+
+.category-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.85rem;
+}
+
+.category-stat-card,
+.status-stat-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  background: var(--paper-white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.category-stat-card span,
+.status-stat-card span {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.category-stat-card strong,
+.status-stat-card strong {
+  color: var(--terracotta-dark);
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.8rem;
+}
+
+.status-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.status-stat-card {
+  min-height: 90px;
+}
+
+@media (max-width: 900px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stat-card-featured {
+    grid-column: 1 / -1;
+  }
+
+  .category-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .stats-grid,
+  .category-stats-grid,
+  .status-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card-featured {
+    grid-column: auto;
+  }
+
+  .stats-section-heading h2 {
+    font-size: 1.6rem;
+  }
+}
+
+.password-strength {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.password-strength-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.65rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.password-strength-header strong {
+  color: var(--ink);
+}
+
+.password-strength-bar {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  background: #eadfd3;
+  border-radius: 999px;
+}
+
+.password-strength-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 180ms ease, background-color 180ms ease;
+}
+
+.password-strength-weak .password-strength-bar span {
+  background: #c94b3c;
+}
+
+.password-strength-medium .password-strength-bar span {
+  background: #d39435;
+}
+
+.password-strength-strong .password-strength-bar span {
+  background: #5d9760;
+}
+
+.password-strength-weak .password-strength-header strong {
+  color: #a63b32;
+}
+
+.password-strength-medium .password-strength-header strong {
+  color: #a66d1f;
+}
+
+.password-strength-strong .password-strength-header strong {
+  color: #467448;
+}
+
+.password-rules {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  list-style: none;
+}
+
+.password-rules li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.password-rules li span {
+  color: #a63b32;
+  font-weight: 800;
+}
+
+.password-rules .password-rule-valid {
+  color: #467448;
+}
+
+.password-rules .password-rule-valid span {
+  color: #467448;
+}
+
+.password-match {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.password-match-valid {
+  color: #467448;
+}
+
+.password-match-invalid {
+  color: var(--danger);
 }

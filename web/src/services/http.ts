@@ -10,35 +10,86 @@ export class HttpError extends Error {
   }
 }
 
+interface ApiErrorResponse {
+  erreur?: {
+    code?: number;
+    message?: string;
+  };
+  detail?: string | Array<{
+    msg?: string;
+  }>;
+  message?: string;
+}
+
+function getApiErrorMessage(
+  data: unknown,
+  status: number,
+): string {
+  if (typeof data === "object" && data !== null) {
+    const errorData = data as ApiErrorResponse;
+
+    if (
+      errorData.erreur !== undefined &&
+      typeof errorData.erreur.message === "string"
+    ) {
+      return errorData.erreur.message;
+    }
+
+    if (typeof errorData.message === "string") {
+      return errorData.message;
+    }
+
+    if (typeof errorData.detail === "string") {
+      return errorData.detail;
+    }
+
+    if (Array.isArray(errorData.detail)) {
+      const messages = errorData.detail
+        .map((item) => item.msg)
+        .filter(
+          (message): message is string =>
+            typeof message === "string",
+        );
+
+      if (messages.length > 0) {
+        return messages.join(", ");
+      }
+    }
+  }
+
+  if (status === 400 || status === 401) {
+    return "Email ou mot de passe incorrect.";
+  }
+
+  if (status === 403) {
+    return "Vous n’êtes pas autorisée à effectuer cette action.";
+  }
+
+  if (status === 404) {
+    return "Ressource introuvable.";
+  }
+
+  if (status === 422) {
+    return "Les données envoyées sont invalides.";
+  }
+
+  if (status >= 500) {
+    return "Le serveur rencontre un problème. Réessayez plus tard.";
+  }
+
+  return `Erreur HTTP ${status}`;
+}
+
 async function parseError(response: Response): Promise<string> {
   const text = await response.text();
 
   if (text === "") {
-    return `Erreur HTTP ${response.status}`;
+    return getApiErrorMessage(null, response.status);
   }
 
   try {
     const data: unknown = JSON.parse(text);
-
-    if (
-      typeof data === "object" &&
-      data !== null &&
-      "detail" in data &&
-      typeof data.detail === "string"
-    ) {
-      return data.detail;
-    }
-
-    if (
-      typeof data === "object" &&
-      data !== null &&
-      "message" in data &&
-      typeof data.message === "string"
-    ) {
-      return data.message;
-    }
-
-    return text;
+    return getApiErrorMessage(data, response.status);
   } catch {
     return text;
   }
@@ -49,7 +100,6 @@ export async function request<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const token = localStorage.getItem("access_token");
-
   const headers = new Headers(options.headers);
 
   headers.set("Accept", "application/json");
@@ -69,7 +119,6 @@ export async function request<T>(
 
   if (!response.ok) {
     const message = await parseError(response);
-
     throw new HttpError(response.status, message);
   }
 
