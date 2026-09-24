@@ -8,7 +8,6 @@ import { getCollection } from "../services/collectionService";
 import { HttpError } from "../services/http";
 import type { Entry } from "../types/api";
 
-
 function CollectionPage() {
   const [collection, setCollection] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,11 +55,7 @@ function CollectionPage() {
   if (loading) {
     return (
       <main className="page">
-        <Link className="back-link" to="/">
-          <span aria-hidden="true">←</span>
-          <span>Retour au catalogue</span>
-        </Link>
-
+        <BackToCatalog />
         <p className="eyebrow">Espace personnel</p>
         <h1>Ma collection</h1>
         <LoadingMessage message="Chargement de votre collection..." />
@@ -71,11 +66,7 @@ function CollectionPage() {
   if (error !== "") {
     return (
       <main className="page">
-        <Link className="back-link" to="/">
-          <span aria-hidden="true">←</span>
-          <span>Retour au catalogue</span>
-        </Link>
-
+        <BackToCatalog />
         <p className="eyebrow">Espace personnel</p>
         <h1>Ma collection</h1>
         <ErrorMessage message={error} />
@@ -85,16 +76,12 @@ function CollectionPage() {
 
   return (
     <main className="page">
-      <Link className="back-link" to="/">
-        <span aria-hidden="true">←</span>
-        <span>Retour au catalogue</span>
-      </Link>
+      <BackToCatalog />
 
       <p className="eyebrow">Espace personnel</p>
-
       <h1>Ma collection</h1>
 
-      <p className="hero-text">
+      <p className="collection-intro">
         Retrouvez ici les recettes que vous souhaitez garder
         précieusement dans votre carnet.
       </p>
@@ -102,7 +89,6 @@ function CollectionPage() {
       {collection.length === 0 ? (
         <section className="empty-collection">
           <EmptyMessage message="Votre collection est encore vide." />
-
           <Link className="primary-action" to="/">
             Découvrir les recettes
           </Link>
@@ -110,12 +96,10 @@ function CollectionPage() {
       ) : (
         <section className="recipe-grid">
           {collection.map((entry) => (
-            <article
-              className="recipe-card"
-              key={entry.id}
-            >
+            <article className="recipe-card" key={entry.id}>
               <Link
                 to={`/items/${entry.item.id}?from=collection`}
+                className="recipe-image-link"
               >
                 {entry.item.image_url !== null ? (
                   <img
@@ -140,7 +124,13 @@ function CollectionPage() {
                 <div className="recipe-details">
                   <span>{entry.item.temps_preparation} min</span>
                   <span>{entry.item.difficulte}</span>
-                  <span>{entry.statut}</span>
+                  <span>{formatStatus(entry.statut)}</span>
+
+                  {entry.note !== null && (
+                    <span className="recipe-rating">
+                      Note {entry.note}/5
+                    </span>
+                  )}
                 </div>
               </div>
             </article>
@@ -151,5 +141,23 @@ function CollectionPage() {
   );
 }
 
+function BackToCatalog() {
+  return (
+    <Link className="back-link" to="/">
+      <span aria-hidden="true">←</span>
+      <span>Retour au catalogue</span>
+    </Link>
+  );
+}
+
+function formatStatus(status: string): string {
+  const labels: Record<string, string> = {
+    a_decouvrir: "À découvrir",
+    en_cours: "En cours",
+    termine: "Terminé",
+  };
+
+  return labels[status] ?? status;
+}
 
 export default CollectionPage;

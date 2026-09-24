@@ -1,16 +1,16 @@
-import type { Entry, Statut } from "../types/api";
+import type {
+  Entry,
+  Statut,
+  StatsResponse,
+} from "../types/api";
+
 import { request } from "./http";
 
-export interface StatsResponse {
-  total: number;
-  a_decouvrir: number;
-  en_cours: number;
-  termine: number;
-}
 
 export function getCollection(): Promise<Entry[]> {
   return request<Entry[]>("/me/collection");
 }
+
 
 export function addToCollection(
   itemId: number,
@@ -24,6 +24,7 @@ export function addToCollection(
     }),
   });
 }
+
 
 export function updateCollectionEntry(
   itemId: number,
@@ -46,6 +47,7 @@ export function deleteCollectionEntry(
     method: "DELETE",
   });
 }
+
 
 export function getStats(): Promise<StatsResponse> {
   return request<StatsResponse>("/me/stats");
