@@ -54,7 +54,7 @@ function CollectionPage() {
 
   if (loading) {
     return (
-      <main className="page">
+      <main className="page collection-page">
         <BackToCatalog />
         <p className="eyebrow">Espace personnel</p>
         <h1>Ma collection</h1>
