@@ -1,163 +1,331 @@
-# Catalogue de recettes – React + FastAPI
+# Catalogue de recettes
 
-Projet réalisé par **Clément HAYOT**  et **Bianca PONS**, étudiants en **B2 Cybersécurité**.
+Application web de consultation et de gestion d'une collection de recettes.
 
-Projet fullstack : un catalogue de recettes avec authentification, collection personnelle et annotations.
+Le projet est composé de :
 
-- Backend : FastAPI + SQLModel + SQLite
-- Frontend : React + Vite + TypeScript
-- Authentification : JWT + bcrypt
+- un frontend React avec Vite ;
+- une API backend FastAPI ;
+- une base de données PostgreSQL lancée avec Docker Compose.
+
+## Architecture
+
+```text
+Navigateur
+    │
+    ▼
+Frontend React / Vite
+    │ http://localhost:5173
+    ▼
+API FastAPI
+    │ http://localhost:8000
+    ▼
+PostgreSQL dans Docker
+    │ localhost:5432
+    ▼
+Base collection_db
+```
 
 ## Prérequis
 
-Il faut avoir sur sa machine :
+Installer les outils suivants :
 
-- Python 3.12+
-- Node.js 18+
-- npm
-- Un terminal (bash, zsh, PowerShell, etc.)
+- Git ;
+- Docker Desktop avec l'intégration WSL 2 si le projet est utilisé dans WSL ;
+- Python 3.12 ou une version compatible ;
+- Node.js et npm.
+
+Vérifier les installations :
+
+```bash
+docker --version
+docker compose version
+python3 --version
+node --version
+npm --version
+```
+
+### Utilisation avec WSL
+
+<sup> *Si vous utilisez pas WSL, passez cette étape.*
+
+Si le projet est lancé dans WSL, Docker Desktop doit être ouvert côté Windows.
+
+Dans Docker Desktop, vérifier :
+
+1. `Settings` → `General` → `Use the WSL 2 based engine` est activé ;
+2. `Settings` → `Resources` → `WSL Integration` ;
+3. la distribution utilisée, par exemple Ubuntu, est activée.
+
+Dans WSL, vérifier ensuite :
+
+```bash
+docker --version
+docker compose version
+```
 
 ## Structure du projet
 
 ```text
 React_Python_B2/
-├── api/          # Backend FastAPI
-├── web/          # Frontend React
-└── start.sh      # Script pour lancer api + web
+├── api/
+│   ├── core/
+│   │   ├── config.py
+│   │   └── security.py
+│   ├── db/
+│   │   └── database.py
+│   ├── dependencies/
+│   │   ├── auth.py
+│   │   └── database.py
+│   ├── models/
+│   │   ├── collection.py
+│   │   ├── item.py
+│   │   └── user.py
+│   ├── routers/
+│   │   ├── auth.py
+│   │   ├── collection.py
+│   │   └── items.py
+│   ├── schemas/
+│   ├── .env
+│   ├── .env.example
+│   ├── requirements.txt
+│   ├── seed.py
+│   └── main.py
+├── web/
+│   ├── src/
+│   ├── package.json
+│   └── ...
+├── docker-compose.yml
+├── start.sh 
+└── README.md
 ```
 
-## 1. Installer et lancer le backend
+## Configuration PostgreSQL
 
-*Après avoir cloné le lien Git*
+La base PostgreSQL est lancée par le fichier :
+
+```text
+docker-compose.yml
+```
+
+La configuration utilisée par l'application est :
+
+```text
+Base       : collection_db
+Utilisateur: postgres
+Mot de passe: postgres
+Hôte       : localhost
+Port       : 5432
+```
+
+Le fichier `api/.env` doit contenir :
+
+```env
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/collection_db
+JWT_SECRET=change_this_secret
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+Ne commitez pas un fichier `.env` contenant des secrets réels. Utilisez `api/.env.example` comme modèle.
+
+## Démarrage rapide
+
+### 1. Cloner le projet
+
+```bash
+git clone <URL_DU_DEPOT>
+cd React_Python_B2
+```
+
+### 2. Démarrer PostgreSQL
+
+Depuis la racine du projet :
+
+```bash
+docker compose up -d
+```
+
+Vérifier l'état du conteneur :
+
+```bash
+docker compose ps
+```
+
+### 3. Installer les dépendances backend
 
 ```bash
 cd api
-python -m venv .venv
-source .venv/bin/activate        # Linux / macOS
-# .venv\Scripts\activate         # Windows (PowerShell)
-
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Crée un fichier `.env` dans `api/` avec au moins :
+### 4. Initialiser les recettes
 
-```text
-SECRET_KEY=une_cle_secrete_aleatoire
-DATABASE_URL=sqlite+aiosqlite:///./collection.db
-```
-
-Génère une clé secrète si besoin (exemple) :
-
-```bash
-python -c "import secrets; print(secrets.token_urlsafe(32))"
-```
-
-Initialise la base et ajoute les recettes :
+Depuis le dossier `api` et avec l'environnement virtuel activé :
 
 ```bash
 python seed.py
 ```
 
-Lance le serveur :
+Cette commande :
+
+- crée les tables manquantes ;
+- ajoute les recettes initiales ;
+- met à jour les recettes déjà présentes ;
+- récupère certaines images via TheMealDB lorsque nécessaire.
+
+### 5. Démarrer l'API
 
 ```bash
-python -m uvicorn main:app --reload --port 8000
+uvicorn main:app --reload
 ```
 
-Le backend est accessible sur :
+L'API est disponible à l'adresse :
 
-```text
-http://127.0.0.1:8000
-http://127.0.0.1:8000/docs
-```
+- [http://localhost:8000](http://localhost:8000)
+- [http://localhost:8000/docs](http://localhost:8000/docs) pour Swagger UI.
 
-## 2. Installer et lancer le frontend
+### 6. Installer les dépendances frontend
 
 Dans un autre terminal :
 
 ```bash
 cd web
 npm install
-```
-
-Lance le serveur de développement :
-
-```bash
 npm run dev
 ```
 
-Le frontend est accessible sur :
+Le frontend est disponible à l'adresse :
 
-```text
-http://localhost:5173
-```
+- [http://localhost:5173](http://localhost:5173)
 
-## 3. Lancer tout le projet d’un coup
+## Démarrage avec `start.sh`
 
-Depuis la racine du projet :
+Le projet peut être lancé via le script `start.sh`. On autorise son éxécution : 
 
 ```bash
-cd ..
 chmod +x start.sh
+```
+
+Avant de lancer le script, PostgreSQL doit être démarré :
+
+```bash
+docker compose up -d
 ./start.sh
 ```
 
-Ce script lance :
+### Si vous souhaitez éxecuter indépendamment le frontend du backend : 
 
-- le backend sur `http://127.0.0.1:8000`
-- le frontend sur `http://localhost:5173`
-
-## 4. Créer un compte et se connecter
-
-Depuis le frontend :
-
-1. Va sur la page d’inscription.
-2. Crée un compte avec un email et un mot de passe.
-3. Connecte-toi avec ces identifiants.
-
-Le frontend appelle :
-
-- `POST /auth/register`
-- `POST /auth/login`
-- `GET /auth/me`
-
-Le token JWT est ensuite envoyé automatiquement dans les requêtes protégées.
-
-## 5. Utiliser l’API directement (optionnel)
-
-Ouvre :
-
-```text
-http://127.0.0.1:8000/docs
-```
-
-Quelques routes utiles :
-
-- `POST /auth/register`
-- `POST /auth/login`
-- `GET /auth/me`
-- `GET /items`
-- `GET /items/{id}`
-- `POST /me/collection`
-- `GET /me/collection`
-- `PATCH /me/collection/item/{item_id}`
-- `DELETE /me/collection/item/{item_id}`
-- `GET /me/stats`
-
-Pour les routes protégées, clique sur `Authorize` et colle le token obtenu avec `POST /auth/login`.
-
-## 6. Recréer la base de données
-
-Si tu veux repartir de zéro (comptes + collections + recettes) :
+### Terminal backend
 
 ```bash
 cd api
-rm collection.db
-python seed.py
+source .venv/bin/activate
+uvicorn main:app --reload
 ```
 
-Attention : cela supprime tous les comptes utilisateurs existants.
+### Terminal frontend
 
----
+```bash
+cd web
+npm run dev
+```
 
-Merci d’avoir testé notre projet, et surtout bon appétit !
+## Fonctionnalités
+
+- consultation du catalogue de recettes ;
+- recherche et filtrage des recettes ;
+- affichage du détail d'une recette ;
+- création de compte ;
+- connexion avec authentification JWT ;
+- ajout d'une recette à sa collection ;
+- modification du statut d'une recette ;
+- ajout d'une note et d'un commentaire ;
+- suppression d'une recette de la collection ;
+- persistance des données dans PostgreSQL.
+
+## API principale
+
+Les routes exactes peuvent être consultées dans Swagger :
+
+```text
+http://localhost:8000/docs
+```
+
+Les principaux groupes de routes sont :
+
+- authentification ;
+- recettes ;
+- collection personnelle.
+
+Les requêtes nécessitant une authentification utilisent un token JWT transmis avec l'en-tête :
+
+```http
+Authorization: Bearer <token>
+```
+
+## Développement en équipe
+
+Avant de commencer :
+
+```bash
+git pull
+docker compose up -d
+```
+
+Installer ou mettre à jour les dépendances si nécessaire :
+
+```bash
+cd api
+source .venv/bin/activate
+pip install -r requirements.txt
+
+cd ../web
+npm install
+```
+
+Ne pas versionner :
+
+- `api/.env` ;
+- `api/.venv/` ;
+- `api/collection.db` si elle est uniquement utilisée comme ancienne base locale ;
+- les caches et fichiers générés.
+
+Avant un commit :
+
+```bash
+git status
+git diff
+```
+
+## Technologies
+
+### Frontend
+
+- React ;
+- TypeScript ;
+- Vite ;
+- React Router.
+
+### Backend
+
+- Python ;
+- FastAPI ;
+- Uvicorn ;
+- SQLModel ;
+- SQLAlchemy ;
+- asyncpg ;
+- JWT ;
+- HTTPX.
+
+### Base de données
+
+- PostgreSQL ;
+- Docker ;
+- Docker Compose.
+
+## Licence
+
+Projet réalisé dans le cadre d'un projet pédagogique par Bianca PONS et Clément HAYOT.
