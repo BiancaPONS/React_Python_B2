@@ -9,11 +9,42 @@ import { HttpError } from "../services/http";
 import { getItems } from "../services/itemService";
 import type { Item } from "../types/api";
 
+
+const ITEMS_PER_PAGE = 12;
+
+const CATEGORIES = [
+  "Apéro",
+  "Boissons",
+  "Entrée",
+  "Plat",
+  "Dessert",
+];
+
+
 function HomePage() {
   const [recherche, setRecherche] = useState("");
+  const [rechercheDebounced, setRechercheDebounced] = useState("");
+  const [categorie, setCategorie] = useState("");
+  const [page, setPage] = useState(1);
+
   const [recettes, setRecettes] = useState<Item[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setRechercheDebounced(recherche.trim());
+    }, 400);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [recherche]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [rechercheDebounced, categorie]);
 
   useEffect(() => {
     let cancelled = false;
@@ -24,11 +55,15 @@ function HomePage() {
 
       try {
         const response = await getItems({
-          limit: 100,
+          q: rechercheDebounced || undefined,
+          categorie: categorie || undefined,
+          page,
+          limit: ITEMS_PER_PAGE,
         });
 
         if (!cancelled) {
           setRecettes(response.results);
+          setTotal(response.total);
         }
       } catch (caughtError: unknown) {
         if (cancelled) {
@@ -54,21 +89,24 @@ function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [rechercheDebounced, categorie, page]);
 
-  const texteRecherche = recherche.trim().toLowerCase();
+  const totalPages = Math.max(
+    1,
+    Math.ceil(total / ITEMS_PER_PAGE),
+  );
 
-  const recettesFiltrees = recettes.filter((recette) => {
-    if (texteRecherche === "") {
-      return true;
-    }
+  function handleRechercheChange(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): void {
+    setRecherche(event.target.value);
+  }
 
-    return (
-      recette.titre.toLowerCase().includes(texteRecherche) ||
-      recette.categorie.toLowerCase().includes(texteRecherche) ||
-      recette.description.toLowerCase().includes(texteRecherche)
-    );
-  });
+  function handleCategorieChange(
+    event: React.ChangeEvent<HTMLSelectElement>,
+  ): void {
+    setCategorie(event.target.value);
+  }
 
   return (
     <>
@@ -84,15 +122,32 @@ function HomePage() {
             Découvrez, enregistrez et notez vos recettes préférées.
           </p>
 
-          <input
-            id="recipe-search"
-            className="search-input"
-            type="search"
-            placeholder="Rechercher une recette..."
-            aria-label="Rechercher une recette"
-            value={recherche}
-            onChange={(event) => setRecherche(event.target.value)}
-          />
+          <div className="catalogue-filters">
+            <input
+              id="recipe-search"
+              className="search-input"
+              type="search"
+              placeholder="Rechercher une recette..."
+              aria-label="Rechercher une recette"
+              value={recherche}
+              onChange={handleRechercheChange}
+            />
+
+            <select
+              className="category-select"
+              value={categorie}
+              onChange={handleCategorieChange}
+              aria-label="Filtrer les recettes par catégorie"
+            >
+              <option value="">Toutes les catégories</option>
+
+              {CATEGORIES.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
         </section>
 
         <section className="catalogue">
@@ -104,8 +159,8 @@ function HomePage() {
 
             {!loading && error === "" && (
               <span>
-                {recettesFiltrees.length} recette
-                {recettesFiltrees.length !== 1 ? "s" : ""}
+                {total} recette
+                {total !== 1 ? "s" : ""}
               </span>
             )}
           </div>
@@ -118,34 +173,90 @@ function HomePage() {
             <ErrorMessage message={error} />
           )}
 
-          {!loading &&
-            error === "" &&
-            recettesFiltrees.length === 0 && (
-              <EmptyMessage
-                message={
-                  recherche.trim() === ""
-                    ? "Aucune recette disponible pour le moment."
-                    : "Aucune recette ne correspond à votre recherche."
-                }
-              />
-            )}
+          {!loading && error === "" && recettes.length === 0 && (
+            <EmptyMessage
+              message={
+                recherche.trim() === "" && categorie === ""
+                  ? "Aucune recette disponible pour le moment."
+                  : "Aucune recette ne correspond à votre recherche."
+              }
+            />
+          )}
 
-          {!loading &&
-            error === "" &&
-            recettesFiltrees.length > 0 && (
+          {!loading && error === "" && recettes.length > 0 && (
+            <>
               <div className="recipe-grid">
-                {recettesFiltrees.map((recette) => (
+                {recettes.map((recette) => (
                   <ItemCard
                     key={recette.id}
                     item={recette}
                   />
                 ))}
               </div>
-            )}
+
+              {totalPages > 1 && (
+                <nav
+                  className="pagination"
+                  aria-label="Pagination du catalogue"
+                >
+                  <button
+                    type="button"
+                    className="pagination-arrow"
+                    disabled={page === 1}
+                    onClick={() => {
+                      setPage((currentPage) => currentPage - 1);
+                    }}
+                    aria-label="Page précédente"
+                  >
+                    ←
+                  </button>
+
+                  <div className="pagination-pages">
+                    {Array.from(
+                      { length: totalPages },
+                      (_, index) => index + 1,
+                    ).map((pageNumber) => (
+                      <button
+                        key={pageNumber}
+                        type="button"
+                        className={
+                          pageNumber === page
+                            ? "pagination-page pagination-page-active"
+                            : "pagination-page"
+                        }
+                        onClick={() => {
+                          setPage(pageNumber);
+                        }}
+                        aria-label={`Aller à la page ${pageNumber}`}
+                        aria-current={
+                          pageNumber === page ? "page" : undefined
+                        }
+                      >
+                        {pageNumber}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="pagination-arrow"
+                    disabled={page === totalPages}
+                    onClick={() => {
+                      setPage((currentPage) => currentPage + 1);
+                    }}
+                    aria-label="Page suivante"
+                  >
+                    →
+                  </button>
+                </nav>
+              )}
+            </>
+          )}
         </section>
       </main>
     </>
   );
 }
+
 
 export default HomePage;
