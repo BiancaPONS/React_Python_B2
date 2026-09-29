@@ -1476,5 +1476,164 @@ p {
   }
 }
 
+/* Bouton du thème */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.8rem !important;
+  color: var(--ink) !important;
+  background: transparent !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 999px !important;
+}
 
+.theme-toggle:hover {
+  color: var(--paper-white) !important;
+  background: var(--terracotta-dark) !important;
+}
 
+.theme-toggle span:first-child {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Couleurs du thème sombre */
+:root[data-theme="dark"] {
+  color: #f6eee4;
+  background: #211816;
+
+  --paper: #211816;
+  --paper-dark: #382722;
+  --paper-white: #2c201d;
+  --ink: #f6eee4;
+  --muted: #cdbbb1;
+  --terracotta: #d8784f;
+  --terracotta-dark: #f0a078;
+  --gold: #e5bb6b;
+  --border: #62473d;
+  --danger: #f08a7d;
+  --shadow: 0 18px 45px rgb(0 0 0 / 0.35);
+  --small-shadow: 0 8px 20px rgb(0 0 0 / 0.25);
+}
+
+:root[data-theme="dark"] html {
+  background: var(--paper);
+}
+
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(
+      circle at 15% 20%,
+      rgb(255 180 130 / 0.08) 0,
+      transparent 25rem
+    ),
+    linear-gradient(
+      90deg,
+      rgb(230 150 100 / 0.04) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      0deg,
+      rgb(230 150 100 / 0.04) 1px,
+      transparent 1px
+    ),
+    var(--paper);
+}
+
+:root[data-theme="dark"] .header {
+  background: rgb(35 24 22 / 0.94);
+}
+
+:root[data-theme="dark"] .search-input,
+:root[data-theme="dark"] .category-select,
+:root[data-theme="dark"] .form-card input,
+:root[data-theme="dark"] .pagination-arrow,
+:root[data-theme="dark"] .pagination-page {
+  color: var(--ink);
+  background: #382722;
+  border-color: var(--border);
+}
+
+:root[data-theme="dark"] .recipe-category,
+:root[data-theme="dark"] .recipe-rating {
+  color: #ffd9c2;
+  background: #513329;
+  border-color: #7d5545;
+}
+
+:root[data-theme="dark"] .recipe-details > span {
+  color: var(--ink);
+  background: #382722;
+  border-color: #62473d;
+}
+
+:root[data-theme="dark"] .recipe-description {
+  background: #392821;
+}
+
+:root[data-theme="dark"] .recipe-ingredients {
+  background: #353027;
+}
+
+:root[data-theme="dark"] .recipe-preparation {
+  background: #3c2925;
+}
+
+:root[data-theme="dark"] .comment-section {
+  background: #392821;
+}
+
+:root[data-theme="dark"] .comment-input {
+  color: var(--ink);
+  background: #30211e;
+  border-color: var(--border);
+}
+
+:root[data-theme="dark"] .empty-personal-card,
+:root[data-theme="dark"] .not-found-card {
+  background:
+    linear-gradient(
+      135deg,
+      rgb(255 255 255 / 0.05),
+      transparent 60%
+    ),
+    var(--paper-white);
+}
+
+:root[data-theme="dark"] .form-message {
+  color: #cfe5bc;
+  background: #2e4028;
+  border-color: #52714a;
+}
+
+:root[data-theme="dark"] .form-error,
+:root[data-theme="dark"] .status-error {
+  color: #ffc0b9;
+  background: #4a2928;
+  border-color: #814946;
+}
+
+:root[data-theme="dark"] .password-strength {
+  background: #30211e;
+}
+
+:root[data-theme="dark"] .password-strength-bar {
+  background: #4a352e;
+}
+
+:root[data-theme="dark"] .back-link {
+  color: var(--ink);
+  background: rgb(44 32 29 / 0.95);
+}
+
+:root[data-theme="dark"] .pagination-page-active {
+  color: #241714;
+  background: var(--terracotta);
+  border-color: var(--terracotta);
+}
+
+:root[data-theme="dark"] .pagination-page-active:hover {
+  color: #241714;
+  background: #efa27e;
+}

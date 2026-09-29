@@ -1,9 +1,16 @@
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
+
 
 function Header() {
   const { isAuthenticated, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+
+  const themeLabel = theme === "light"
+    ? "Passer en mode sombre"
+    : "Passer en mode clair";
 
   return (
     <header className="header">
@@ -12,6 +19,22 @@ function Header() {
       </Link>
 
       <nav className="navigation">
+        <button
+          className="theme-toggle"
+          type="button"
+          onClick={toggleTheme}
+          aria-label={themeLabel}
+          title={themeLabel}
+        >
+          <span aria-hidden="true">
+            {theme === "light" ? "☾" : "☀"}
+          </span>
+
+          <span className="theme-toggle-label">
+            {theme === "light" ? "Sombre" : "Clair"}
+          </span>
+        </button>
+
         {isAuthenticated ? (
           <>
             <Link to="/collection">Ma collection</Link>
@@ -31,5 +54,6 @@ function Header() {
     </header>
   );
 }
+
 
 export default Header;
