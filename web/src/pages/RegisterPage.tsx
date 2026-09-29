@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { HttpError } from "../services/http";
 import { register } from "../services/authService";
+import { HttpError } from "../services/http";
+
 
 interface PasswordChecks {
   length: boolean;
@@ -11,6 +12,7 @@ interface PasswordChecks {
   number: boolean;
   special: boolean;
 }
+
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -110,6 +112,11 @@ function RegisterPage() {
   return (
     <main className="form-page">
       <section className="form-card">
+        <Link className="back-link" to="/">
+          <span aria-hidden="true">←</span>
+          <span>Retour à l’accueil</span>
+        </Link>
+
         <p className="eyebrow">Créer un compte</p>
 
         <h1>Rejoignez votre carnet</h1>
@@ -262,10 +269,12 @@ function RegisterPage() {
   );
 }
 
+
 interface PasswordRuleProps {
   valid: boolean;
   text: string;
 }
+
 
 function PasswordRule({
   valid,
@@ -280,5 +289,6 @@ function PasswordRule({
     </li>
   );
 }
+
 
 export default RegisterPage;
