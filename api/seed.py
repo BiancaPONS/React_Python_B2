@@ -114,7 +114,7 @@ items = [
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5ZUsbTaNx9-xKQuCACfAOlJYcsvz85-kVSU-4PedK9A&s=10",
     ),
     recette(
-        "Crème jambon fromage",
+        "Feuilleté jambon fromage",
         "Entrée",
         35,
         "Facile",
