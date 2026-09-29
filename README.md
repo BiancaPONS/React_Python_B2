@@ -122,12 +122,23 @@ Le fichier `api/.env` doit contenir :
 
 ```env
 DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/collection_db
-JWT_SECRET=change_this_secret
+JWT_SECRET=remplacer_par_un_secret_long_et_aleatoire
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
+Pour se faire, vous pouvez utiliser la commande suivante : 
 
-Ne commitez pas un fichier `.env` contenant des secrets réels. Utilisez `api/.env.example` comme modèle.
+```bash
+cd api
+cat > .env <<'EOF'
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/collection_db
+JWT_SECRET=remplacer_par_un_secret_long_et_aleatoire
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+EOF
+```
+
+Ne commitez pas un fichier `.env` contenant des secrets réels. Remplacez JWT_SECRET par un vrai code secret qui permettra de hasher les mots de passe.
 
 ## Démarrage rapide
 
