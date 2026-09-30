@@ -1638,3 +1638,55 @@ p {
   background: #efa27e;
 }
 
+.collection-page .recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  justify-content: stretch;
+  gap: 1.4rem;
+}
+
+.collection-page .recipe-card {
+  width: 100%;
+  max-width: none;
+}
+
+.collection-page .recipe-content {
+  padding: 1.3rem;
+}
+
+.collection-page .recipe-details {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  width: 100%;
+  margin: 1rem 0 0;
+  overflow: visible;
+  white-space: normal;
+}
+
+.collection-page .recipe-details > span {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 850px) {
+  .collection-page .recipe-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .collection-page .recipe-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .collection-page .recipe-details {
+    gap: 0.45rem;
+  }
+
+  .collection-page .recipe-details > span {
+    padding: 0.3rem 0.45rem;
+    font-size: 0.9rem;
+  }
+}
