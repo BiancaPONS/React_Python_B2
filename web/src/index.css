@@ -1690,3 +1690,46 @@ p {
     font-size: 0.9rem;
   }
 }
+
+.collection-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.collection-filters label {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.collection-filters select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0.6rem 0.8rem;
+  color: var(--ink);
+  background: var(--paper-white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.collection-results {
+  margin-bottom: 1.25rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 800px) {
+  .collection-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .collection-filters {
+    grid-template-columns: 1fr;
+  }
+}
