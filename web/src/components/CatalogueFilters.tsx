@@ -30,11 +30,13 @@ function CatalogueFilters({
     onRechercheChange(event.target.value);
   }
 
+
   function handleCategorieChange(
     event: ChangeEvent<HTMLSelectElement>,
   ): void {
     onCategorieChange(event.target.value);
   }
+
 
   return (
     <div className="catalogue-filters">
@@ -48,6 +50,7 @@ function CatalogueFilters({
         onChange={handleRechercheChange}
       />
 
+
       <select
         className="category-select"
         value={categorie}
@@ -56,11 +59,21 @@ function CatalogueFilters({
       >
         <option value="">Toutes les catégories</option>
 
+
         {categories.map((category) => (
           <option key={category} value={category}>
             {category}
           </option>
         ))}
+
+
+        <option value="__sans_gluten__">
+          Sans Gluten
+        </option>
+
+        <option value="__vegetarien__">
+          Végétarien
+        </option>
       </select>
     </div>
   );

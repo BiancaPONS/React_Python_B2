@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 
+import DietaryBadges from "./DietaryBadges";
 import type { Item } from "../types/api";
 
 interface ItemCardProps {
@@ -35,6 +36,8 @@ function ItemCard({ item }: ItemCardProps) {
         <span className="recipe-category">{item.categorie}</span>
 
         <h2>{item.titre}</h2>
+
+        <DietaryBadges item={item} />
 
         <div className="recipe-details">
           <span>{item.temps_preparation} min</span>
