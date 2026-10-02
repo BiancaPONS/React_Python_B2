@@ -9,6 +9,7 @@ import LoginPage from "./pages/LoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import RegisterPage from "./pages/RegisterPage";
 import StatsPage from "./pages/StatsPage";
+import VerifyLoginCodePage from "./pages/VerifyLoginCodePage";
 
 
 function App() {
@@ -21,7 +22,12 @@ function App() {
           element={<ItemDetailPage />}
         />
         <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/verify-code"
+          element={<VerifyLoginCodePage />}
+        />
         <Route path="/register" element={<RegisterPage />} />
+
 
         <Route element={<ProtectedRoute />}>
           <Route
@@ -30,6 +36,7 @@ function App() {
           />
           <Route path="/stats" element={<StatsPage />} />
         </Route>
+
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

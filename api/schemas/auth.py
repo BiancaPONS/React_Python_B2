@@ -11,9 +11,23 @@ class LoginRequest(BaseModel):
     password: str = Field(min_length=1, max_length=72)
 
 
+class VerifyLoginCodeRequest(BaseModel):
+    challenge_id: int
+    code: str = Field(
+        min_length=6,
+        max_length=6,
+        pattern=r"^\d{6}$",
+    )
+
+
 class UserResponse(BaseModel):
     id: int
     email: EmailStr
+
+
+class LoginChallengeResponse(BaseModel):
+    challenge_id: int
+    message: str
 
 
 class TokenResponse(BaseModel):

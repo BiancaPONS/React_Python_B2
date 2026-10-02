@@ -5,30 +5,36 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { HttpError } from "../services/http";
 
+
 function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
   ): Promise<void> {
     event.preventDefault();
 
+
     setError("");
     setLoading(true);
 
+
     try {
-      await login({
+      const challengeId = await login({
         email,
         password,
       });
 
-      navigate("/");
+
+      navigate(`/verify-code?challenge_id=${challengeId}`);
     } catch (caughtError: unknown) {
       if (caughtError instanceof HttpError) {
         setError(caughtError.message);
@@ -42,6 +48,7 @@ function LoginPage() {
     }
   }
 
+
   return (
     <main className="form-page">
       <section className="form-card">
@@ -50,17 +57,22 @@ function LoginPage() {
           <span>Retour à l’accueil</span>
         </Link>
 
+
         <p className="eyebrow">Votre carnet vous attend</p>
 
+
         <h1>Retrouvez vos recettes</h1>
+
 
         <p>
           Connectez-vous pour retrouver votre collection personnelle
           et vos notes.
         </p>
 
+
         <form onSubmit={handleSubmit}>
           <label htmlFor="email">Adresse email</label>
+
 
           <input
             id="email"
@@ -72,7 +84,9 @@ function LoginPage() {
             required
           />
 
+
           <label htmlFor="password">Mot de passe</label>
+
 
           <input
             id="password"
@@ -84,16 +98,19 @@ function LoginPage() {
             required
           />
 
+
           <button type="submit" disabled={loading}>
-            {loading ? "Ouverture du carnet..." : "Se connecter"}
+            {loading ? "Envoi du code..." : "Se connecter"}
           </button>
         </form>
+
 
         {error !== "" && (
           <p className="form-error" role="alert">
             {error}
           </p>
         )}
+
 
         <p className="form-link">
           Pas encore de compte ?{" "}
@@ -103,5 +120,6 @@ function LoginPage() {
     </main>
   );
 }
+
 
 export default LoginPage;

@@ -11,28 +11,35 @@ import {
   getMe,
   login as loginRequest,
   register as registerRequest,
+  verifyLoginCode as verifyLoginCodeRequest,
 } from "../services/authService";
 import type {
   AuthToken,
   LoginBody,
   RegisterBody,
   User,
+  VerifyLoginCodeBody,
 } from "../types/api";
+
 
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
-  login: (data: LoginBody) => Promise<void>;
+  login: (data: LoginBody) => Promise<number>;
+  verifyLoginCode: (data: VerifyLoginCodeBody) => Promise<void>;
   register: (data: RegisterBody) => Promise<User>;
   logout: () => void;
 }
+
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
+
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
 
 export function AuthProvider({
   children,
@@ -40,13 +47,16 @@ export function AuthProvider({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+
   useEffect(() => {
     const token = localStorage.getItem("access_token");
+
 
     if (token === null) {
       setLoading(false);
       return;
     }
+
 
     getMe()
       .then((currentUser) => {
@@ -61,8 +71,15 @@ export function AuthProvider({
       });
   }, []);
 
-  async function login(data: LoginBody): Promise<void> {
-    const token: AuthToken = await loginRequest(data);
+
+  async function login(data: LoginBody): Promise<number> {
+    const challenge = await loginRequest(data);
+    return challenge.challenge_id;
+  }
+
+
+  async function verifyLoginCode(data: VerifyLoginCodeBody): Promise<void> {
+    const token: AuthToken = await verifyLoginCodeRequest(data);
 
     localStorage.setItem("access_token", token.access_token);
 
@@ -70,14 +87,17 @@ export function AuthProvider({
     setUser(currentUser);
   }
 
+
   async function register(data: RegisterBody): Promise<User> {
     return registerRequest(data);
   }
+
 
   function logout(): void {
     localStorage.removeItem("access_token");
     setUser(null);
   }
+
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -85,11 +105,13 @@ export function AuthProvider({
       loading,
       isAuthenticated: user !== null,
       login,
+      verifyLoginCode,
       register,
       logout,
     }),
     [user, loading],
   );
+
 
   return (
     <AuthContext.Provider value={value}>
@@ -98,12 +120,15 @@ export function AuthProvider({
   );
 }
 
+
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext);
+
 
   if (context === undefined) {
     throw new Error("useAuth doit être utilisé dans AuthProvider.");
   }
+
 
   return context;
 }
