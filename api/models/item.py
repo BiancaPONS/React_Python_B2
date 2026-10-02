@@ -11,3 +11,5 @@ class Item(SQLModel, table=True):
     image_url: str | None = None
     temps_preparation: int
     difficulte: str
+    sans_gluten: bool = Field(default=False)
+    vegetarien: bool = Field(default=False) 

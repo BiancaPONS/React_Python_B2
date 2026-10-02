@@ -30,6 +30,8 @@ export interface Item {
   image_url: string | null;
   temps_preparation: number;
   difficulte: string;
+  sans_gluten: boolean;
+  vegetarien: boolean;
 }
 
 export interface Entry {

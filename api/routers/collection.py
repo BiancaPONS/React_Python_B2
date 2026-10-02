@@ -41,6 +41,8 @@ def build_entry_response(
             image_url=item.image_url,
             temps_preparation=item.temps_preparation,
             difficulte=item.difficulte,
+            sans_gluten=item.sans_gluten,
+            vegetarien=item.vegetarien,
         ),
     )
 

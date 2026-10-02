@@ -13,6 +13,8 @@ class ItemResponse(BaseModel):
     image_url: str | None
     temps_preparation: int
     difficulte: str
+    sans_gluten: bool
+    vegetarien: bool
 
 
 class ItemListResponse(BaseModel):

@@ -1,62 +1,83 @@
-import { Link } from "react-router-dom";
-
-import type { Entry, Statut } from "../types/api";
+import type { ChangeEvent } from "react";
 
 
-interface CollectionEntryCardProps {
-  entry: Entry;
+interface CatalogueFiltersProps {
+  recherche: string;
+  categorie: string;
+  onRechercheChange: (value: string) => void;
+  onCategorieChange: (value: string) => void;
 }
 
 
-const statusLabels: Record<Statut, string> = {
-  a_decouvrir: "À découvrir",
-  en_cours: "En cours",
-  termine: "Terminé",
-};
+const categories = [
+  "Apéro",
+  "Boissons",
+  "Entrée",
+  "Plat",
+  "Dessert",
+];
 
 
-function CollectionEntryCard({ entry }: CollectionEntryCardProps) {
-  const { item } = entry;
+function CatalogueFilters({
+  recherche,
+  categorie,
+  onRechercheChange,
+  onCategorieChange,
+}: CatalogueFiltersProps) {
+  function handleRechercheChange(
+    event: ChangeEvent<HTMLInputElement>,
+  ): void {
+    onRechercheChange(event.target.value);
+  }
+
+
+  function handleCategorieChange(
+    event: ChangeEvent<HTMLSelectElement>,
+  ): void {
+    onCategorieChange(event.target.value);
+  }
+
 
   return (
-    <article className="recipe-card">
-      <Link
-        to={`/items/${item.id}?from=collection`}
-        className="recipe-image-link"
+    <div className="catalogue-filters">
+      <input
+        id="recipe-search"
+        className="search-input"
+        type="search"
+        placeholder="Rechercher une recette..."
+        aria-label="Rechercher une recette"
+        value={recherche}
+        onChange={handleRechercheChange}
+      />
+
+
+      <select
+        className="category-select"
+        value={categorie}
+        onChange={handleCategorieChange}
+        aria-label="Filtrer les recettes par catégorie"
       >
-        {item.image_url !== null ? (
-          <img
-            className="recipe-image"
-            src={item.image_url}
-            alt={item.titre}
-          />
-        ) : (
-          <div className="recipe-image recipe-image-placeholder">
-            Aucune image disponible
-          </div>
-        )}
-      </Link>
+        <option value="">Toutes les catégories</option>
 
-      <div className="recipe-content">
-        <span className="recipe-category">{item.categorie}</span>
 
-        <h2>{item.titre}</h2>
+        {categories.map((category) => (
+          <option key={category} value={category}>
+            {category}
+          </option>
+        ))}
 
-        <div className="recipe-details">
-          <span>{item.temps_preparation} min</span>
-          <span>{item.difficulte}</span>
-          <span>{statusLabels[entry.statut]}</span>
 
-          {entry.note !== null && (
-            <span className="recipe-rating">
-              Note {entry.note}/5
-            </span>
-          )}
-        </div>
-      </div>
-    </article>
+        <option value="__sans_gluten__">
+          Sans Gluten
+        </option>
+
+        <option value="__vegetarien__">
+          Végétarien
+        </option>
+      </select>
+    </div>
   );
 }
 
 
-export default CollectionEntryCard;
+export default CatalogueFilters;

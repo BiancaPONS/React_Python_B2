@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 
+
 import { HttpError } from "../services/http";
 import { getItems } from "../services/itemService";
 import type { Item } from "../types/api";
 
 
 const ITEMS_PER_PAGE = 12;
+
+
+const GLUTEN_FREE_CATEGORY = "__sans_gluten__";
+const VEGETARIAN_CATEGORY = "__vegetarien__";
 
 
 interface CatalogueState {
@@ -23,6 +28,45 @@ interface CatalogueState {
 }
 
 
+function isDietaryCategory(category: string): boolean {
+  return (
+    category === GLUTEN_FREE_CATEGORY ||
+    category === VEGETARIAN_CATEGORY
+  );
+}
+
+
+function getApiCategory(category: string): string | undefined {
+  if (isDietaryCategory(category) || category === "") {
+    return undefined;
+  }
+
+  return category;
+}
+
+
+function getDietaryFilter(
+  category: string,
+): {
+  sans_gluten?: boolean;
+  vegetarien?: boolean;
+} {
+  if (category === GLUTEN_FREE_CATEGORY) {
+    return {
+      sans_gluten: true,
+    };
+  }
+
+  if (category === VEGETARIAN_CATEGORY) {
+    return {
+      vegetarien: true,
+    };
+  }
+
+  return {};
+}
+
+
 export function useCatalogue(): CatalogueState {
   const [recherche, setRecherche] = useState("");
   const [rechercheDebounced, setRechercheDebounced] = useState("");
@@ -33,32 +77,44 @@ export function useCatalogue(): CatalogueState {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setRechercheDebounced(recherche.trim());
     }, 400);
 
+
     return () => window.clearTimeout(timeoutId);
   }, [recherche]);
+
 
   useEffect(() => {
     setPage(1);
   }, [rechercheDebounced, categorie]);
 
+
   useEffect(() => {
     let cancelled = false;
+
 
     async function loadItems(): Promise<void> {
       setLoading(true);
       setError("");
 
+
+      const dietaryFilter = getDietaryFilter(categorie);
+      const apiCategory = getApiCategory(categorie);
+
+
       try {
         const response = await getItems({
           q: rechercheDebounced || undefined,
-          categorie: categorie || undefined,
+          categorie: apiCategory,
           page,
           limit: ITEMS_PER_PAGE,
+          ...dietaryFilter,
         });
+
 
         if (!cancelled) {
           setRecettes(response.results);
@@ -68,6 +124,7 @@ export function useCatalogue(): CatalogueState {
         if (cancelled) {
           return;
         }
+
 
         if (caughtError instanceof HttpError) {
           setError(caughtError.message);
@@ -83,12 +140,15 @@ export function useCatalogue(): CatalogueState {
       }
     }
 
+
     void loadItems();
+
 
     return () => {
       cancelled = true;
     };
   }, [rechercheDebounced, categorie, page]);
+
 
   return {
     recherche,
@@ -99,7 +159,10 @@ export function useCatalogue(): CatalogueState {
     setPage,
     recettes,
     total,
-    totalPages: Math.max(1, Math.ceil(total / ITEMS_PER_PAGE)),
+    totalPages: Math.max(
+      1,
+      Math.ceil(total / ITEMS_PER_PAGE),
+    ),
     loading,
     error,
   };

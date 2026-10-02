@@ -181,4 +181,18 @@
     right: 0;
     border-right-color: var(--border);
   }
+  .dietary-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 14px 0;
+  }
+
+  .dietary-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 14px 0;
+  }
 }
