@@ -6,11 +6,13 @@ interface PasswordChecks {
   special: boolean;
 }
 
+
 interface PasswordStrengthProps {
   checks: PasswordChecks;
   score: number;
   strength: "weak" | "medium" | "strong";
 }
+
 
 function PasswordRule({
   valid,
@@ -26,6 +28,7 @@ function PasswordRule({
     </li>
   );
 }
+
 
 function PasswordStrength({
   checks,
@@ -66,7 +69,10 @@ function PasswordStrength({
           valid={checks.uppercase}
           text="Une lettre majuscule"
         />
-        <PasswordRule valid={checks.number} text="Un chiffre" />
+        <PasswordRule
+          valid={checks.number}
+          text="Un chiffre"
+        />
         <PasswordRule
           valid={checks.special}
           text="Un caractère spécial"
@@ -75,5 +81,6 @@ function PasswordStrength({
     </div>
   );
 }
+
 
 export default PasswordStrength;

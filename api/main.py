@@ -6,19 +6,30 @@ from db.database import create_db_and_tables
 from routers.auth import router as auth_router
 from routers.collection import router as collection_router
 from routers.items import router as items_router
+from models.password_reset_challenge import (
+    PasswordResetChallenge,
+)
 
 
 app = FastAPI(title="Catalogue de recettes")
 
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+
+app = FastAPI()
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(

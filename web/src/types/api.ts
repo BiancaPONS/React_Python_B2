@@ -81,3 +81,22 @@ export interface ApiError {
   code: number;
   message: string;
 }
+
+export interface ForgotPasswordBody {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+  challenge_id?: number | null;
+}
+
+export interface ResetPasswordBody {
+  challenge_id: number;
+  code: string;
+  new_password: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+}

@@ -9,6 +9,7 @@ from core.config import DATABASE_URL
 from models.collection import CollectionEntry
 from models.item import Item
 from models.login_challenge import LoginChallenge
+from models.password_reset_challenge import PasswordResetChallenge
 from models.user import User
 
 

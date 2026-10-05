@@ -2,16 +2,24 @@ from datetime import datetime, timedelta
 import logging
 import secrets
 
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
+
 
 from core.config import (
     LOGIN_CODE_EXPIRE_MINUTES,
     LOGIN_CODE_LOCK_MINUTES,
     LOGIN_CODE_MAX_ATTEMPTS,
+    PASSWORD_RESET_CODE_EXPIRE_MINUTES,
+    PASSWORD_RESET_CODE_LOCK_MINUTES,
+    PASSWORD_RESET_CODE_MAX_ATTEMPTS,
 )
-from core.email import send_login_code_email
+from core.email import (
+    send_login_code_email,
+    send_password_reset_code_email,
+)
 from core.security import (
     create_access_token,
     hash_password,
@@ -20,11 +28,18 @@ from core.security import (
 from dependencies.auth import get_current_user
 from dependencies.database import get_session
 from models.login_challenge import LoginChallenge
+from models.password_reset_challenge import (
+    PasswordResetChallenge,
+)
 from models.user import User
 from schemas.auth import (
+    ForgotPasswordRequest,
+    ForgotPasswordResponse,
     LoginChallengeResponse,
     LoginRequest,
     RegisterRequest,
+    ResetPasswordRequest,
+    ResetPasswordResponse,
     TokenResponse,
     UserResponse,
     VerifyLoginCodeRequest,
@@ -105,7 +120,6 @@ async def login(
     session: AsyncSession = Depends(get_session),
 ) -> LoginChallengeResponse:
     email = data.email.lower()
-    recipient_email = email
 
     query = select(User).where(User.email == email)
     result = await session.exec(query)
@@ -129,15 +143,14 @@ async def login(
     user_id = user.id
     now = get_now()
 
-    latest_challenge_query = (
+    latest_query = (
         select(LoginChallenge)
         .where(LoginChallenge.user_id == user_id)
         .order_by(LoginChallenge.id.desc())
     )
-    latest_challenge_result = await session.exec(
-        latest_challenge_query,
-    )
-    latest_challenge = latest_challenge_result.first()
+
+    latest_result = await session.exec(latest_query)
+    latest_challenge = latest_result.first()
 
     if (
         latest_challenge is not None
@@ -150,14 +163,13 @@ async def login(
         )
 
     code = generate_login_code()
-    expires_at = now + timedelta(
-        minutes=LOGIN_CODE_EXPIRE_MINUTES,
-    )
 
     challenge = LoginChallenge(
         user_id=user_id,
         code_hash=hash_password(code),
-        expires_at=expires_at,
+        expires_at=now + timedelta(
+            minutes=LOGIN_CODE_EXPIRE_MINUTES,
+        ),
     )
 
     session.add(challenge)
@@ -165,7 +177,7 @@ async def login(
     await session.refresh(challenge)
 
     try:
-        send_login_code_email(recipient_email, code)
+        send_login_code_email(email, code)
     except Exception:
         logger.exception(
             "Erreur lors de l'envoi du code de connexion",
@@ -251,7 +263,8 @@ async def verify_code(
             )
 
         remaining_attempts = (
-            LOGIN_CODE_MAX_ATTEMPTS - challenge.failed_attempts
+            LOGIN_CODE_MAX_ATTEMPTS
+            - challenge.failed_attempts
         )
 
         raise get_error(
@@ -267,17 +280,179 @@ async def verify_code(
             "Utilisateur introuvable.",
         )
 
-    user_id = user.id
-
     challenge.used_at = now
+
     session.add(challenge)
     await session.commit()
 
-    token = create_access_token(user_id)
+    token = create_access_token(user.id)
 
     return TokenResponse(
         access_token=token,
         token_type="bearer",
+    )
+
+
+@router.post(
+    "/forgot-password",
+    response_model=ForgotPasswordResponse,
+)
+async def forgot_password(
+    data: ForgotPasswordRequest,
+    session: AsyncSession = Depends(get_session),
+) -> ForgotPasswordResponse:
+    email = data.email.lower()
+
+    message = (
+        "Si cette adresse existe, un code de réinitialisation "
+        "a été envoyé par e-mail."
+    )
+
+    query = select(User).where(User.email == email)
+    result = await session.exec(query)
+    user = result.first()
+
+    if user is None or user.id is None:
+        return ForgotPasswordResponse(message=message)
+
+    now = get_now()
+
+    code = generate_login_code()
+
+    challenge = PasswordResetChallenge(
+        user_id=user.id,
+        code_hash=hash_password(code),
+        expires_at=now + timedelta(
+            minutes=PASSWORD_RESET_CODE_EXPIRE_MINUTES,
+        ),
+    )
+
+    session.add(challenge)
+    await session.commit()
+    await session.refresh(challenge)
+
+    try:
+        send_password_reset_code_email(
+            recipient_email=email,
+            code=code,
+        )
+    except Exception:
+        logger.exception(
+            "Erreur lors de l'envoi du code de réinitialisation",
+        )
+
+        await session.delete(challenge)
+        await session.commit()
+
+        raise get_error(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Impossible d'envoyer le code de réinitialisation.",
+        ) from None
+
+    if challenge.id is None:
+        raise get_error(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Identifiant de réinitialisation invalide.",
+        )
+
+    return ForgotPasswordResponse(
+        message=message,
+        challenge_id=challenge.id,
+    )
+
+
+@router.post(
+    "/reset-password",
+    response_model=ResetPasswordResponse,
+)
+async def reset_password(
+    data: ResetPasswordRequest,
+    session: AsyncSession = Depends(get_session),
+) -> ResetPasswordResponse:
+    challenge = await session.get(
+        PasswordResetChallenge,
+        data.challenge_id,
+    )
+
+    if challenge is None:
+        raise get_error(
+            status.HTTP_404_NOT_FOUND,
+            "Demande de réinitialisation introuvable.",
+        )
+
+    now = get_now()
+
+    if challenge.used_at is not None:
+        raise get_error(
+            status.HTTP_400_BAD_REQUEST,
+            "Ce code a déjà été utilisé.",
+        )
+
+    if (
+        challenge.locked_until is not None
+        and challenge.locked_until > now
+    ):
+        raise get_error(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            "Trop de codes incorrects. Réessayez dans 5 minutes.",
+        )
+
+    if challenge.expires_at <= now:
+        raise get_error(
+            status.HTTP_400_BAD_REQUEST,
+            "Ce code a expiré. Demandez-en un nouveau.",
+        )
+
+    if not verify_password(
+        data.code,
+        challenge.code_hash,
+    ):
+        challenge.failed_attempts += 1
+
+        if (
+            challenge.failed_attempts
+            >= PASSWORD_RESET_CODE_MAX_ATTEMPTS
+        ):
+            challenge.locked_until = now + timedelta(
+                minutes=PASSWORD_RESET_CODE_LOCK_MINUTES,
+            )
+
+        session.add(challenge)
+        await session.commit()
+
+        if challenge.locked_until is not None:
+            raise get_error(
+                status.HTTP_429_TOO_MANY_REQUESTS,
+                "Trop de codes incorrects. Réessayez dans 5 minutes.",
+            )
+
+        remaining_attempts = (
+            PASSWORD_RESET_CODE_MAX_ATTEMPTS
+            - challenge.failed_attempts
+        )
+
+        raise get_error(
+            status.HTTP_401_UNAUTHORIZED,
+            f"Code incorrect. Il reste {remaining_attempts} essai(s).",
+        )
+
+    user = await session.get(User, challenge.user_id)
+
+    if user is None:
+        raise get_error(
+            status.HTTP_404_NOT_FOUND,
+            "Utilisateur introuvable.",
+        )
+
+    user.password_hash = hash_password(data.new_password)
+    challenge.used_at = now
+
+    session.add(user)
+    session.add(challenge)
+    await session.commit()
+
+    return ResetPasswordResponse(
+        message="Votre mot de passe a été réinitialisé.",
     )
 
 

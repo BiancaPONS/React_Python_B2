@@ -1,8 +1,12 @@
 import type {
   AuthToken,
+  ForgotPasswordBody,
+  ForgotPasswordResponse,
   LoginBody,
   LoginChallengeResponse,
   RegisterBody,
+  ResetPasswordBody,
+  ResetPasswordResponse,
   User,
   VerifyLoginCodeBody,
 } from "../types/api";
@@ -29,6 +33,26 @@ export function verifyLoginCode(
   data: VerifyLoginCodeBody,
 ): Promise<AuthToken> {
   return request<AuthToken>("/auth/verify-code", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+
+export function forgotPassword(
+  data: ForgotPasswordBody,
+): Promise<ForgotPasswordResponse> {
+  return request<ForgotPasswordResponse>("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+
+export function resetPassword(
+  data: ResetPasswordBody,
+): Promise<ResetPasswordResponse> {
+  return request<ResetPasswordResponse>("/auth/reset-password", {
     method: "POST",
     body: JSON.stringify(data),
   });

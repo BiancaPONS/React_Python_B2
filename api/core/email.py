@@ -18,6 +18,48 @@ def send_login_code_email(
     recipient_email: str,
     code: str,
 ) -> None:
+    print("APPEL send_login_code_email")
+
+    send_code_email(
+        recipient_email=recipient_email,
+        code=code,
+        subject="Votre code de connexion",
+        purpose="connexion",
+    )
+
+
+def send_password_reset_code_email(
+    recipient_email: str,
+    code: str,
+) -> None:
+    print("APPEL send_password_reset_code_email")
+
+    send_code_email(
+        recipient_email=recipient_email,
+        code=code,
+        subject="Réinitialisation de votre mot de passe",
+        purpose="réinitialisation de votre mot de passe",
+    )
+
+
+def send_code_email(
+    recipient_email: str,
+    code: str,
+    subject: str,
+    purpose: str,
+) -> None:
+    print(
+        "SMTP DEBUG:",
+        {
+            "host": SMTP_HOST,
+            "port": SMTP_PORT,
+            "username": SMTP_USERNAME,
+            "password_defined": bool(SMTP_PASSWORD),
+            "mail_from": MAIL_FROM,
+            "recipient": recipient_email,
+        },
+    )
+
     if not SMTP_HOST:
         raise RuntimeError("SMTP_HOST est obligatoire")
 
@@ -28,20 +70,18 @@ def send_login_code_email(
         raise RuntimeError("SMTP_PASSWORD est obligatoire")
 
     message = EmailMessage()
-    message["From"] = (
-        f"{SMTP_FROM_NAME} <{MAIL_FROM}>"
-    )
+    message["From"] = f"{SMTP_FROM_NAME} <{MAIL_FROM}>"
     message["To"] = recipient_email
-    message["Subject"] = "Votre code de connexion"
+    message["Subject"] = subject
 
     message.set_content(
         f"""Bonjour,
 
-Voici votre code de connexion :
+Voici votre code de {purpose} :
 
 {code}
 
-Ce code est valable pendant 5 minutes et ne peut être utilisé qu'une seule fois.
+Ce code est valable pendant 10 minutes et ne peut être utilisé qu'une seule fois.
 
 Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail.
 
@@ -49,7 +89,20 @@ L'équipe Catalogue de recettes
 """
     )
 
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as smtp:
+    print("CONNEXION SMTP EN COURS")
+
+    with smtplib.SMTP(
+        SMTP_HOST,
+        SMTP_PORT,
+        timeout=20,
+    ) as smtp:
+        smtp.ehlo()
         smtp.starttls()
-        smtp.login(SMTP_USERNAME, SMTP_PASSWORD)
+        smtp.ehlo()
+        smtp.login(
+            SMTP_USERNAME,
+            SMTP_PASSWORD,
+        )
         smtp.send_message(message)
+
+    print("EMAIL ENVOYE")

@@ -1,15 +1,26 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+
 
 import { useAuth } from "../contexts/AuthContext";
 import { HttpError } from "../services/http";
 
 
+interface LoginLocationState {
+  message?: string;
+}
+
+
 function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
+  const locationState =
+    location.state as LoginLocationState | null;
+
+  const successMessage = locationState?.message ?? "";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,17 +33,14 @@ function LoginPage() {
   ): Promise<void> {
     event.preventDefault();
 
-
     setError("");
     setLoading(true);
-
 
     try {
       const challengeId = await login({
         email,
         password,
       });
-
 
       navigate(`/verify-code?challenge_id=${challengeId}`);
     } catch (caughtError: unknown) {
@@ -57,22 +65,17 @@ function LoginPage() {
           <span>Retour à l’accueil</span>
         </Link>
 
-
         <p className="eyebrow">Votre carnet vous attend</p>
 
-
         <h1>Retrouvez vos recettes</h1>
-
 
         <p>
           Connectez-vous pour retrouver votre collection personnelle
           et vos notes.
         </p>
 
-
         <form onSubmit={handleSubmit}>
           <label htmlFor="email">Adresse email</label>
-
 
           <input
             id="email"
@@ -84,9 +87,7 @@ function LoginPage() {
             required
           />
 
-
           <label htmlFor="password">Mot de passe</label>
-
 
           <input
             id="password"
@@ -98,12 +99,16 @@ function LoginPage() {
             required
           />
 
-
           <button type="submit" disabled={loading}>
             {loading ? "Envoi du code..." : "Se connecter"}
           </button>
         </form>
 
+        {successMessage !== "" && (
+          <p className="form-success" role="status">
+            {successMessage}
+          </p>
+        )}
 
         {error !== "" && (
           <p className="form-error" role="alert">
@@ -111,6 +116,11 @@ function LoginPage() {
           </p>
         )}
 
+        <p className="form-link">
+          <Link to="/forgot-password">
+            Mot de passe oublié ?
+          </Link>
+        </p>
 
         <p className="form-link">
           Pas encore de compte ?{" "}
