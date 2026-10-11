@@ -6,7 +6,9 @@ Le projet est composé de :
 
 - un frontend React avec Vite ;
 - une API backend FastAPI ;
-- une base de données PostgreSQL lancée avec Docker Compose.
+- une base de données PostgreSQL lancée avec Docker Compose ;
+- une authentification avec JWT et code de connexion à deux facteurs ;
+- une réinitialisation de mot de passe par code envoyé par email.
 
 ## Architecture
 
@@ -47,7 +49,7 @@ npm --version
 
 ### Utilisation avec WSL
 
-<sup> *Si vous utilisez pas WSL, passez cette étape.*
+*Si vous n'utilisez pas WSL, passez cette étape.*
 
 Si le projet est lancé dans WSL, Docker Desktop doit être ouvert côté Windows.
 
@@ -71,6 +73,7 @@ React_Python_B2/
 ├── api/
 │   ├── core/
 │   │   ├── config.py
+│   │   ├── email.py
 │   │   └── security.py
 │   ├── db/
 │   │   └── database.py
@@ -80,6 +83,8 @@ React_Python_B2/
 │   ├── models/
 │   │   ├── collection.py
 │   │   ├── item.py
+│   │   ├── login_challenge.py
+│   │   ├── password_reset_challenge.py
 │   │   └── user.py
 │   ├── routers/
 │   │   ├── auth.py
@@ -96,7 +101,7 @@ React_Python_B2/
 │   ├── package.json
 │   └── ...
 ├── docker-compose.yml
-├── start.sh 
+├── start.sh
 └── README.md
 ```
 
@@ -111,34 +116,71 @@ docker-compose.yml
 La configuration utilisée par l'application est :
 
 ```text
-Base       : collection_db
-Utilisateur: postgres
+Base        : collection_db
+Utilisateur : postgres
 Mot de passe: postgres
-Hôte       : localhost
-Port       : 5432
+Hôte        : localhost
+Port        : 5432
+```
+
+## Variables d'environnement
+
+### Backend : `api/.env`
+
+Créer le fichier depuis le modèle fourni :
+
+```bash
+cd api
+cp .env.example .env
 ```
 
 Le fichier `api/.env` doit contenir :
 
 ```env
 DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/collection_db
+
 JWT_SECRET=remplacer_par_un_secret_long_et_aleatoire
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+LOGIN_CODE_EXPIRE_MINUTES=5
+LOGIN_CODE_MAX_ATTEMPTS=3
+LOGIN_CODE_LOCK_MINUTES=5
+
+PASSWORD_RESET_CODE_EXPIRE_MINUTES=10
+PASSWORD_RESET_CODE_MAX_ATTEMPTS=3
+PASSWORD_RESET_CODE_LOCK_MINUTES=5
+
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=votre-adresse@gmail.com
+SMTP_PASSWORD=votre-mot-de-passe-dapplication
+MAIL_FROM=votre-adresse@gmail.com
+SMTP_FROM_NAME=Catalogue de recettes
 ```
-Pour se faire, vous pouvez utiliser la commande suivante : 
+
+### Frontend : `web/.env`
+
+Créer le fichier depuis le modèle fourni :
 
 ```bash
-cd api
-cat > .env <<'EOF'
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/collection_db
-JWT_SECRET=remplacer_par_un_secret_long_et_aleatoire
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-EOF
+cd web
+cp .env.example .env
 ```
 
-Ne commitez pas un fichier `.env` contenant des secrets réels. Remplacez JWT_SECRET par un vrai code secret qui permettra de hasher les mots de passe.
+Le fichier `web/.env` doit contenir :
+
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+## Sécurité
+
+`JWT_SECRET` est utilisé pour signer les jetons JWT. Il ne sert pas à hasher les mots de passe.
+
+Les mots de passe sont stockés avec un hash bcrypt. Les codes de connexion et les codes de réinitialisation sont également stockés sous forme de hash.
+
+Ne commitez jamais un fichier `.env` contenant des secrets réels.
 
 ## Démarrage rapide
 
@@ -156,6 +198,8 @@ Depuis la racine du projet :
 ```bash
 docker compose up -d
 ```
+
+L'option `-d` démarre les conteneurs en arrière-plan. 
 
 Vérifier l'état du conteneur :
 
@@ -189,14 +233,18 @@ Cette commande :
 
 ### 5. Démarrer l'API
 
+Depuis le dossier `api` et avec l'environnement virtuel activé :
+
 ```bash
-uvicorn main:app --reload
+uvicorn main:app --reload --host localhost --port 8000
 ```
 
 L'API est disponible à l'adresse :
 
 - [http://localhost:8000](http://localhost:8000)
 - [http://localhost:8000/docs](http://localhost:8000/docs) pour Swagger UI.
+
+L'option `--reload` est utile en développement car Uvicorn redémarre automatiquement le serveur après une modification de fichier. 
 
 ### 6. Installer les dépendances frontend
 
@@ -205,7 +253,7 @@ Dans un autre terminal :
 ```bash
 cd web
 npm install
-npm run dev
+npm run dev -- --host localhost --port 5173
 ```
 
 Le frontend est disponible à l'adresse :
@@ -214,7 +262,9 @@ Le frontend est disponible à l'adresse :
 
 ## Démarrage avec `start.sh`
 
-Le projet peut être lancé via le script `start.sh`. On autorise son éxécution : 
+Le projet peut être lancé via le script `start.sh`.
+
+Autoriser son exécution :
 
 ```bash
 chmod +x start.sh
@@ -227,22 +277,61 @@ docker compose up -d
 ./start.sh
 ```
 
-### Si vous souhaitez éxecuter indépendamment le frontend du backend : 
+## Lancer le backend et le frontend séparément
 
 ### Terminal backend
 
 ```bash
 cd api
 source .venv/bin/activate
-uvicorn main:app --reload
+uvicorn main:app --reload --host localhost --port 8000
 ```
 
 ### Terminal frontend
 
 ```bash
 cd web
-npm run dev
+npm run dev -- --host localhost --port 5173
 ```
+
+## Authentification
+
+La connexion fonctionne en deux étapes :
+
+1. L'utilisateur envoie son email et son mot de passe.
+2. Un code à six chiffres est envoyé par email.
+3. L'utilisateur saisit ce code pour obtenir un token JWT.
+
+Les routes principales sont :
+
+```text
+POST /auth/register
+POST /auth/login
+POST /auth/verify-code
+GET  /auth/me
+```
+
+## Réinitialisation du mot de passe
+
+La réinitialisation fonctionne en deux étapes :
+
+1. L'utilisateur saisit son adresse email.
+2. Un code de réinitialisation est envoyé par email.
+3. L'utilisateur saisit le code et choisit un nouveau mot de passe.
+
+Les routes principales sont :
+
+```text
+POST /auth/forgot-password
+POST /auth/reset-password
+```
+
+Le code de réinitialisation est :
+
+- à six chiffres ;
+- valable pendant 10 minutes ;
+- utilisable une seule fois ;
+- limité à trois tentatives.
 
 ## Fonctionnalités
 
@@ -250,7 +339,8 @@ npm run dev
 - recherche et filtrage des recettes ;
 - affichage du détail d'une recette ;
 - création de compte ;
-- connexion avec authentification JWT ;
+- connexion avec authentification JWT et code à deux facteurs ;
+- réinitialisation du mot de passe par code email ;
 - ajout d'une recette à sa collection ;
 - modification du statut d'une recette ;
 - ajout d'une note et d'un commentaire ;
@@ -300,8 +390,9 @@ npm install
 Ne pas versionner :
 
 - `api/.env` ;
+- `web/.env` ;
 - `api/.venv/` ;
-- `api/collection.db` si elle est uniquement utilisée comme ancienne base locale ;
+- `web/node_modules/` ;
 - les caches et fichiers générés.
 
 Avant un commit :
@@ -329,7 +420,7 @@ git diff
 - SQLAlchemy ;
 - asyncpg ;
 - JWT ;
-- HTTPX.
+- smtplib.
 
 ### Base de données
 

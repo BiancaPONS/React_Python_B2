@@ -9,6 +9,7 @@ Backend FastAPI du catalogue de recettes. Ce guide permet de lancer **uniquement
 - Python 3.12 (ou la version compatible avec `api/requirements.txt`) et `python3-venv`.
 - Docker Desktop démarré, avec Docker Compose accessible depuis le terminal utilisé.
 - Le fichier `docker-compose.yml` à la racine du dépôt.
+- Une adresse email SMTP pour l'envoi des codes de connexion et de réinitialisation.
 
 Vérifier l'environnement :
 
@@ -37,6 +38,8 @@ docker compose up -d
 docker compose ps
 ```
 
+L'option `-d` démarre PostgreSQL en arrière-plan.
+
 ### 3. Installer les dépendances Python
 
 ```bash
@@ -55,13 +58,34 @@ Depuis le dossier `api`, exécuter :
 ```bash
 cat > .env <<'EOF'
 DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/collection_db
+
 JWT_SECRET=remplacer_par_un_secret_long_et_aleatoire
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+LOGIN_CODE_EXPIRE_MINUTES=5
+LOGIN_CODE_MAX_ATTEMPTS=3
+LOGIN_CODE_LOCK_MINUTES=5
+
+PASSWORD_RESET_CODE_EXPIRE_MINUTES=10
+PASSWORD_RESET_CODE_MAX_ATTEMPTS=3
+PASSWORD_RESET_CODE_LOCK_MINUTES=5
+
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=votre-adresse@gmail.com
+SMTP_PASSWORD=votre-mot-de-passe-dapplication
+MAIL_FROM=votre-adresse@gmail.com
+SMTP_FROM_NAME=Catalogue de recettes
 EOF
 ```
 
-Remplacer `remplacer_par_un_secret_long_et_aleatoire` par un secret personnel avant de démarrer l’API. 
+Remplacer les valeurs suivantes avant de démarrer l'API :
+
+- `JWT_SECRET` : secret long et aléatoire ;
+- `SMTP_USERNAME` : adresse Gmail utilisée pour envoyer les emails ;
+- `SMTP_PASSWORD` : mot de passe d'application Gmail ;
+- `MAIL_FROM` : adresse d'expédition des emails.
 
 Ne pas commiter `api/.env`.
 
@@ -73,31 +97,76 @@ Toujours depuis `api`, avec `.venv` activé :
 python seed.py
 ```
 
-Le script appelle la création des tables manquantes, ajoute ou met à jour les recettes de départ et peut effectuer des requêtes réseau pour récupérer des images. Ne le relancez pas en supposant qu'il restaurera les comptes ou les collections : il initialise les recettes, pas les données personnelles.
+Le script crée les tables manquantes, ajoute ou met à jour les recettes de départ et peut effectuer des requêtes réseau pour récupérer des images.
+
+Il initialise uniquement les recettes. Il ne restaure pas les comptes utilisateurs ni les collections personnelles.
 
 ### 6. Démarrer l'API seule
 
 ```bash
-uvicorn main:app --reload
+uvicorn main:app --reload --host localhost --port 8000
 ```
 
-Laisser ce terminal ouvert, puis aller sur [http://localhost:8000/docs](http://localhost:8000/docs). Swagger UI permet d'ouvrir une route, de cliquer sur **Try it out**, de renseigner les paramètres et de cliquer sur **Execute**.
+Laisser ce terminal ouvert, puis aller sur [http://localhost:8000/docs](http://localhost:8000/docs).
+
+Swagger UI permet d'ouvrir une route, de cliquer sur **Try it out**, de renseigner les paramètres et de cliquer sur **Execute**.
 
 Pour arrêter l'API : `Ctrl+C`.
 
 ## Tester les routes dans Swagger
 
 1. Ouvrir [http://localhost:8000/docs](http://localhost:8000/docs).
-2. Tester d'abord une route publique de consultation des recettes. Son chemin exact figure dans la documentation générée.
+2. Tester d'abord une route publique de consultation des recettes.
 3. Pour tester les routes protégées, créer un compte ou se connecter via les routes d'authentification affichées dans Swagger.
-4. Cliquer sur **Authorize** et fournir le jeton Bearer renvoyé par la connexion si Swagger propose ce bouton, puis exécuter la route protégée. Selon le formulaire affiché, saisir le jeton seul ou avec le préfixe `Bearer `.
+4. Cliquer sur **Authorize** et fournir le jeton Bearer renvoyé par la connexion si Swagger propose ce bouton.
 5. Vérifier le code HTTP et la réponse dans Swagger ; consulter le terminal Uvicorn si une erreur apparaît.
 
 La protection reste côté API : une route de collection doit refuser une requête sans authentification même lorsque React n'est pas lancé.
 
+Les routes protégées attendent un en-tête HTTP :
+
+```http
+Authorization: Bearer <token>
+```
+
+## Configuration SMTP
+
+Le projet utilise `smtplib` pour envoyer les codes par email.
+
+Pour Gmail, la configuration recommandée est :
+
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=votre-adresse@gmail.com
+SMTP_PASSWORD=votre-mot-de-passe-dapplication
+MAIL_FROM=votre-adresse@gmail.com
+SMTP_FROM_NAME=Catalogue de recettes
+```
+
+Le port `587` utilise STARTTLS. Gmail exige un mot de passe d'application, et non le mot de passe habituel du compte Google. 
+
 ## Vérifications utiles
 
-Si le nom du service ou de la base est différent dans votre Compose, adaptez ces commandes.
+Vérifier que PostgreSQL fonctionne :
+
+```bash
+docker compose ps
+```
+
+Vérifier que l'API répond :
+
+```bash
+curl http://localhost:8000/docs
+```
+
+Vérifier les tables PostgreSQL :
+
+```bash
+docker compose exec postgres psql -U postgres -d collection_db -c "\dt"
+```
+
+Si le nom du service PostgreSQL ou de la base est différent dans votre `docker-compose.yml`, adapter ces commandes.
 
 ## Démarrage les jours suivants
 
@@ -113,10 +182,12 @@ Terminal 2, pour l'API seule :
 ```bash
 cd ~/React_Python_B2/api
 source .venv/bin/activate
-uvicorn main:app --reload
+uvicorn main:app --reload --host localhost --port 8000
 ```
 
-Ouvrir ensuite [http://localhost:8000/docs](http://localhost:8000/docs). Il n'est pas nécessaire de relancer `python seed.py` à chaque démarrage si les recettes sont déjà en base.
+Ouvrir ensuite [http://localhost:8000/docs](http://localhost:8000/docs).
+
+Il n'est pas nécessaire de relancer `python seed.py` à chaque démarrage si les recettes sont déjà en base.
 
 Pour arrêter PostgreSQL après les tests, depuis la racine :
 
@@ -128,7 +199,7 @@ docker compose down
 
 ```text
 api/
-├── core/           # Configuration et sécurité
+├── core/           # Configuration, sécurité et envoi d'emails
 ├── db/             # Moteur et sessions SQLAlchemy
 ├── dependencies/   # Dépendances FastAPI (session, authentification)
 ├── models/         # Tables SQLModel
@@ -138,3 +209,25 @@ api/
 ├── seed.py         # Recettes initiales
 └── requirements.txt
 ```
+
+## Fichiers importants
+
+```text
+api/core/config.py                       # Variables d'environnement
+api/core/email.py                        # Envoi des codes par email
+api/core/security.py                     # Hash bcrypt et JWT
+api/models/login_challenge.py            # Codes de connexion
+api/models/password_reset_challenge.py   # Codes de réinitialisation
+api/routers/auth.py                      # Routes d'authentification
+api/routers/items.py                     # Routes des recettes
+api/routers/collection.py                # Routes de la collection
+```
+
+## Sécurité
+
+- Les mots de passe sont stockés avec un hash bcrypt.
+- Les codes de connexion et de réinitialisation sont stockés sous forme de hash.
+- Les codes sont à usage unique et ont une durée de vie limitée.
+- Les tentatives incorrectes sont limitées.
+- `JWT_SECRET` sert uniquement à signer les jetons JWT.
+- Ne jamais commiter `api/.env` ni y conserver de secrets réels.
