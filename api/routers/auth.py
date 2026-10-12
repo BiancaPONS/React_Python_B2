@@ -207,6 +207,7 @@ async def login(
     "/verify-code",
     response_model=TokenResponse,
 )
+
 async def verify_code(
     data: VerifyLoginCodeRequest,
     session: AsyncSession = Depends(get_session),
@@ -280,12 +281,14 @@ async def verify_code(
             "Utilisateur introuvable.",
         )
 
+    user_id = user.id
+
     challenge.used_at = now
 
     session.add(challenge)
     await session.commit()
 
-    token = create_access_token(user.id)
+    token = create_access_token(user_id)
 
     return TokenResponse(
         access_token=token,
