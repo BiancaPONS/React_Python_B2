@@ -156,29 +156,10 @@ La Pull Request a fait l'objet d'une relecture par un membre du groupe.
 | Commentaire | [RÉSUMÉ DU COMMENTAIRE] |
 | Correction réalisée | [Modification ADR] |
 
-Exemple de commentaire constructif :
-
-> « La fonctionnalité est correcte. Il serait préférable de vérifier que le code de réinitialisation est marqué comme utilisé après le changement du mot de passe afin d'empêcher sa réutilisation. »
-
-Exemple de réponse :
-
-> « Correction effectuée : le champ `used_at` est maintenant renseigné après une réinitialisation réussie. »
-
 > **Capture 5 — Commentaire de review**
 >
-> Insérer une capture montrant un commentaire de review précis sur un fichier ou une ligne de code.
->
-> ```text
-> [INSÉRER LA CAPTURE D'ÉCRAN]
-> ```
+> ![alt text](image-6.png)
 
-> **Capture 6 — Réponse et correction**
->
-> Insérer une capture montrant la réponse au commentaire, le nouveau commit ou le statut résolu.
->
-> ```text
-> [INSÉRER LA CAPTURE D'ÉCRAN]
-> ```
 
 ## 1.6 Validation et fusion
 
@@ -187,11 +168,11 @@ Après la review et les corrections éventuelles, la Pull Request a été fusion
 | Élément | Information |
 |---|---|
 | État final de la PR | [Merged / Fusionnée] |
-| Méthode de fusion | [Merge commit / Squash and merge / Rebase and merge] |
+| Méthode de fusion | [Merge commit] |
 
 > **Capture 7 — Pull Request fusionnée**
 >
-> ![alt text](image-4.png)
+> ![alt text](image-7.png)
 
 ## 1.7 Fermeture de l'issue
 
@@ -199,13 +180,13 @@ L'issue a été fermée après la fusion de la Pull Request.
 
 | Élément | Information |
 |---|---|
-| Numéro de l'issue | #6 |
+| Numéro de l'issue | #8 |
 | État final | Closed / Fermée |
-| Méthode | [Fermeture automatique via `Closes #6` ou fermeture manuelle] |
+| Méthode | Fermeture automatique via `Closes #8` |
 
 > **Capture 8 — Issue fermée**
 >
-> ![alt text](image-5.png)
+> ![alt text](image-8.png)
 ---
 
 # 2. Documentation technique
@@ -237,7 +218,8 @@ Les README décrivent notamment :
 Nous avons rédigé l'ADR suivant :
 
 ```text
-docs/adr/ADR-001-authentification-double-facteur.md
+docs/adr/001-choix-react-python.md
+docs/adr/002-choix-react-python.md
 ```
 
 ### Décision documentée
@@ -263,13 +245,6 @@ L'ADR présente également :
 - les limites ;
 - les conséquences techniques.
 
-> **Capture 11 — ADR**
->
-> Insérer une capture du fichier ADR dans GitHub ou dans l'éditeur.
->
-> ```text
-> [INSÉRER LA CAPTURE D'ÉCRAN]
-> ```
 
 ## 2.3 Documentation utilisateur
 
@@ -289,76 +264,6 @@ Le guide explique :
 - comment modifier le statut, la note ou le commentaire ;
 - comment consulter les statistiques ;
 - comment résoudre les problèmes les plus fréquents.
-
-> **Capture 12 — Documentation utilisateur**
->
-> Insérer une capture de la documentation utilisateur.
->
-> ```text
-> [INSÉRER LA CAPTURE D'ÉCRAN]
-> ```
-
----
-
-# 3. Tests et vérifications
-
-## 3.1 Lancement du projet
-
-Nous avons vérifié le lancement complet du projet :
-
-```bash
-docker compose up -d
-
-cd api
-source .venv/bin/activate
-uvicorn main:app --reload --host localhost --port 8000
-
-cd ../web
-npm run dev -- --host localhost --port 5173
-```
-
-Résultat attendu :
-
-```text
-Frontend : http://localhost:5173
-API      : http://localhost:8000
-Swagger  : http://localhost:8000/docs
-```
-
-> **Capture 13 — Projet lancé**
->
-> Insérer une capture du frontend fonctionnel ou de Swagger.
->
-> ```text
-> [INSÉRER LA CAPTURE D'ÉCRAN]
-> ```
-
-## 3.2 Tests fonctionnels réalisés
-
-| Fonctionnalité | Test réalisé | Résultat |
-|---|---|---|
-| Consultation des recettes | Chargement du catalogue | [Validé / À compléter] |
-| Création de compte | Inscription avec email unique | [Validé / À compléter] |
-| Connexion | Email + mot de passe corrects | [Validé / À compléter] |
-| Code 2FA | Saisie du code reçu par email | [Validé / À compléter] |
-| Route protégée | Accès à la collection avec JWT | [Validé / À compléter] |
-| Mot de passe oublié | Demande de code par email | [Validé / À compléter] |
-| Réinitialisation | Nouveau mot de passe après code valide | [Validé / À compléter] |
-| Code expiré ou erroné | Refus du code | [Validé / À compléter] |
-| Collection | Ajout et modification d'une recette | [Validé / À compléter] |
-
-## 3.3 Vérifications de sécurité
-
-Les vérifications suivantes ont été mises en œuvre :
-
-- aucun mot de passe n'est stocké en clair ;
-- les codes sont stockés sous forme de hash ;
-- les codes ont une durée de validité ;
-- les codes sont utilisables une seule fois ;
-- les tentatives de code sont limitées ;
-- les routes personnelles exigent un JWT ;
-- les secrets sont placés dans des fichiers `.env` non versionnés ;
-- le CORS limite les appels du navigateur au frontend local autorisé.
 
 ---
 
@@ -397,7 +302,8 @@ Les documents fournis avec ce compte rendu sont :
 README.md
 api/README.md
 web/README.md
-docs/adr/ADR-001-authentification-double-facteur.md
+docs/adr/001-choix-react-python.md
+docs/adr/002-choix-react-python.md
 docs/utilisateur/GUIDE_UTILISATEUR.md
 docs/COMPTE_RENDU_TP.md
 ```
