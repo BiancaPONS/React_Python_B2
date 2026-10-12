@@ -151,10 +151,10 @@ La Pull Request a fait l'objet d'une relecture par un membre du groupe.
 
 | Élément | Information |
 |---|---|
-| Reviewer | [NOM OU PSEUDO] |
-| Fichier commenté | [CHEMIN DU FICHIER] |
+| Reviewer | [BiancaPONS] |
+| Fichier commenté | [] |
 | Commentaire | [RÉSUMÉ DU COMMENTAIRE] |
-| Correction réalisée | [OUI / NON + EXPLICATION] |
+| Correction réalisée | [Modification ADR] |
 
 Exemple de commentaire constructif :
 
